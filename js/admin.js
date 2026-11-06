@@ -1,11 +1,18 @@
 // Painel de gestão da Lilian: visão geral, pedidos, produtos e estoque, solicitações, relatórios
 // e a apresentação do sistema personalizado opcional.
 import * as S from './state.js';
+import * as api from './api.js';
 import { brl, esc, fmtDate, fmtDateTime, toast, productMedia } from './ui.js';
 
-const AUTH = 'fjs:v1:admin';
-const isAuthed = () => { try { return sessionStorage.getItem(AUTH) === '1'; } catch { return window.__fjsAdmin === true; } };
-const setAuthed = (v) => { try { v ? sessionStorage.setItem(AUTH, '1') : sessionStorage.removeItem(AUTH); } catch { window.__fjsAdmin = v; } };
+const loading = '<p class="muted loading-row" role="status">Carregando…</p>';
+// Mostra o erro dentro do painel, sem derrubar a página.
+const failBox = (e) => `<div class="panel panel-error" role="alert"><strong>Não foi possível carregar.</strong><p>${esc(e.message)}</p><button type="button" class="btn btn-small btn-ghost" data-retry>Tentar de novo</button></div>`;
+async function safe(box, fn) {
+  try { await fn(); } catch (e) {
+    box.innerHTML = failBox(e);
+    box.querySelector('[data-retry]').onclick = () => safe(box, fn);
+  }
+}
 
 const KIND = {
   regular: { label: 'Em linha', cls: 'k-regular' },
@@ -17,21 +24,25 @@ const kindChip = (k) => `<span class="kchip ${KIND[k].cls}">${KIND[k].label}</sp
 
 const period = { days: 30, category: '', collection: '' };
 
+let counts = { pending: 0, newReq: 0 };
+async function refreshCounts() {
+  const [orders, reqs] = await Promise.all([api.admin.orders(), api.admin.requests()]);
+  counts = { pending: orders.filter((o) => ['aguardando', 'pago', 'producao'].includes(o.status)).length, newReq: reqs.filter((r) => r.status === 'novo').length };
+  return { orders, reqs };
+}
 function shell(active, content) {
   const nav = [
     ['painel', 'Visão geral'], ['painel-pedidos', 'Pedidos'], ['painel-produtos', 'Produtos e estoque'],
     ['painel-solicitacoes', 'Encomendas e orçamentos'], ['painel-relatorios', 'Relatórios'], ['sistema-opcional', 'Sistema opcional'],
   ];
-  const pending = S.getOrders().filter((o) => ['aguardando', 'pago', 'producao'].includes(o.status)).length;
-  const newReq = S.getRequests().filter((r) => r.status === 'novo').length;
+  const { pending, newReq } = counts;
   return `<section class="admin">
     <div class="wrap admin-grid">
       <aside class="admin-nav" aria-label="Menu do painel">
         <p class="admin-brand">Fan Joy · Gestão</p>
         ${nav.map(([id, label]) => `<a href="#${id}" class="${active === id ? 'is-on' : ''}" ${active === id ? 'aria-current="page"' : ''}>${label}${id === 'painel-pedidos' && pending ? ` <b class="count">${pending}</b>` : ''}${id === 'painel-solicitacoes' && newReq ? ` <b class="count">${newReq}</b>` : ''}</a>`).join('')}
         <div class="admin-nav-foot">
-          <p class="fine">Dados de exemplo salvos só neste navegador.</p>
-          <button type="button" class="link-btn" id="adm-reset">Restaurar dados de exemplo</button>
+          ${api.admin.canReset ? '<p class="fine">Dados de exemplo salvos só neste navegador.</p><button type="button" class="link-btn" id="adm-reset">Restaurar dados de exemplo</button>' : ''}
           <button type="button" class="link-btn" id="adm-out">Sair do painel</button>
         </div>
       </aside>
@@ -40,9 +51,9 @@ function shell(active, content) {
   </section>`;
 }
 function bindShell(root) {
-  root.querySelector('#adm-out').onclick = () => { setAuthed(false); location.hash = '#inicio'; };
+  root.querySelector('#adm-out').onclick = async () => { await api.admin.signOut(); location.hash = '#inicio'; };
   const reset = root.querySelector('#adm-reset');
-  reset.onclick = () => {
+  if (reset) reset.onclick = () => {
     if (reset.dataset.armed) { S.resetDemo(); return; }
     reset.dataset.armed = '1';
     reset.textContent = 'Clique de novo para confirmar';
@@ -50,19 +61,35 @@ function bindShell(root) {
   };
 }
 
-function login() {
+function login(next) {
+  const demo = !api.live;
   return {
     html: `<section class="section page-top"><div class="wrap narrow-wrap login">
       <p class="eyebrow">Painel de gestão</p><h1 class="h1">Área da Lilian</h1>
-      <p>Na loja definitiva, o painel tem login com e-mail, senha e verificação em duas etapas, e cada pessoa da equipe recebe só as permissões de que precisa.</p>
-      <form id="login" class="lookup">
-        <label class="field" for="lg-email"><span>E-mail</span><input id="lg-email" value="lilian@fanjoy.demo" readonly></label>
-        <label class="field" for="lg-pass"><span>Senha</span><input id="lg-pass" type="password" value="demonstracao" readonly></label>
-        <button class="btn btn-primary" type="submit">Entrar na demonstração</button>
+      ${demo ? '<p>Na loja definitiva, o painel tem login com e-mail e senha, e cada pessoa da equipe recebe só as permissões de que precisa.</p>' : '<p>Entre com o e-mail e a senha da sua conta da loja.</p>'}
+      <form id="login" class="lookup" novalidate>
+        <label class="field" for="lg-email"><span>E-mail</span><input id="lg-email" type="email" autocomplete="username" ${demo ? 'value="lilian@fanjoy.demo" readonly' : 'required'}></label>
+        <label class="field" for="lg-pass"><span>Senha</span><input id="lg-pass" type="password" autocomplete="current-password" ${demo ? 'value="demonstracao" readonly' : 'required'}></label>
+        <p class="error" id="lg-err" role="alert" hidden></p>
+        <button class="btn btn-primary" type="submit">${demo ? 'Entrar na demonstração' : 'Entrar'}</button>
       </form>
-      <p class="fine">Nesta apresentação, o acesso é liberado para qualquer pessoa conhecer o painel.</p>
+      ${demo ? '<p class="fine">Nesta apresentação, o acesso é liberado para qualquer pessoa conhecer o painel.</p>' : '<p class="fine">Esqueceu a senha? Peça para a VB Studio enviar um link de redefinição.</p>'}
     </div></section>`,
-    mount(root) { root.querySelector('#login').onsubmit = (e) => { e.preventDefault(); setAuthed(true); window.dispatchEvent(new HashChangeEvent('hashchange')); }; },
+    mount(root) {
+      root.querySelector('#login').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = root.querySelector('#login button');
+        const err = root.querySelector('#lg-err');
+        err.hidden = true; btn.disabled = true; btn.textContent = 'Entrando…';
+        try {
+          await api.admin.signIn(root.querySelector('#lg-email').value.trim(), root.querySelector('#lg-pass').value);
+          next();
+        } catch (ex) {
+          err.textContent = ex.message; err.hidden = false;
+          btn.disabled = false; btn.textContent = demo ? 'Entrar na demonstração' : 'Entrar';
+        }
+      };
+    },
   };
 }
 
@@ -111,9 +138,9 @@ function overview() {
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#ov');
-      const render = () => {
-        const a = S.analytics(period);
-        const action = S.getOrders().filter((o) => ['aguardando', 'pago', 'producao'].includes(o.status));
+      const render = () => safe(box, async () => {
+        const [a, orders] = await Promise.all([api.admin.dashboard(period), api.admin.orders()]);
+        const action = orders.filter((o) => ['aguardando', 'pago', 'producao'].includes(o.status));
         box.innerHTML = `
           <div class="admin-head"><div><p class="eyebrow">Visão geral</p><h1 class="h2">Bom dia, Lilian.</h1></div>${periodBar()}</div>
           <div class="kpis">
@@ -139,8 +166,8 @@ function overview() {
             ${action.length ? `<ul class="order-list">${action.slice(0, 6).map((o) => `<li><a href="#painel-pedidos"><strong>${o.code}</strong><span>${esc(o.customer.name)}</span><span class="pill pill-${o.status}">${esc(S.statusLabel(o.status))}</span><span>${brl(o.total)}</span></a></li>`).join('')}</ul>` : '<p class="muted">Nenhum pedido pendente.</p>'}</div>
           <p class="legend-kinds">${Object.keys(KIND).map(kindChip).join('')}</p>`;
         bindPeriod(box, render);
-      };
-      render();
+      });
+      return render();
     },
   };
 }
@@ -152,9 +179,8 @@ function ordersAdmin() {
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#po');
-      const render = () => {
-        const q = orderFilter.q.toLowerCase();
-        const list = S.getOrders().filter((o) => (!orderFilter.status || o.status === orderFilter.status) && (!q || (o.code + o.customer.name).toLowerCase().includes(q)));
+      const render = (keepFocus = false) => safe(box, async () => {
+        const list = await api.admin.orders({ status: orderFilter.status, q: orderFilter.q });
         box.innerHTML = `<div class="admin-head"><div><p class="eyebrow">Pedidos</p><h1 class="h2">Acompanhar e atualizar pedidos</h1></div>
           <div class="period"><label class="field"><span>Status</span><select id="os"><option value="">Todos</option>${S.STATUS.map((s) => `<option value="${s.id}" ${orderFilter.status === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}</select></label>
           <label class="field"><span>Buscar</span><input id="oq" type="search" placeholder="Código ou cliente" value="${esc(orderFilter.q)}"></label></div></div>
@@ -166,14 +192,25 @@ function ordersAdmin() {
               <td>${fmtDateTime(o.createdAt)}</td><td>${esc(o.customer.name)}<small class="block">${esc(o.customer.city || '')}</small></td>
               <td>${o.items.map((it) => `${it.qty}× ${esc(it.name)}${it.personalization ? ` <small>“${esc(it.personalization)}”</small>` : ''}`).join('<br>')}</td>
               <td class="num">${brl(o.total)}</td><td>${o.payment.method === 'pix' ? 'Pix' : `Cartão ${o.payment.installments}×`}</td>
-              <td><label class="sr" for="st-${o.code}">Status do pedido ${o.code}</label><select id="st-${o.code}" class="status-select pill-${o.status}" data-code="${o.code}">${S.STATUS.map((s) => `<option value="${s.id}" ${o.status === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}</select></td>
+              <td><label class="sr" for="st-${o.code}">Status do pedido ${o.code}</label><select id="st-${o.code}" class="status-select pill-${o.status}" data-code="${o.code}">${S.STATUS.map((s) => `<option value="${s.id}" ${o.status === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}</select>
+              ${['pago', 'producao', 'enviado'].includes(o.status) && api.live ? `<label class="sr" for="tr-${o.code}">Código de rastreio do pedido ${o.code}</label><input id="tr-${o.code}" class="tracking" placeholder="Rastreio" value="${esc(o.trackingCode || '')}">` : ''}</td>
             </tr>`).join('')}</tbody></table></div>
           ${list.length > 60 ? '<p class="fine">Mostrando os 60 mais recentes. Use os filtros para encontrar pedidos antigos.</p>' : ''}`;
         box.querySelector('#os').onchange = (e) => { orderFilter.status = e.target.value; render(); };
-        box.querySelector('#oq').oninput = (e) => { orderFilter.q = e.target.value; const pos = e.target.selectionStart; render(); const i = box.querySelector('#oq'); i.focus(); i.setSelectionRange(pos, pos); };
-        box.querySelectorAll('.status-select').forEach((s) => { s.onchange = () => { S.setOrderStatus(s.dataset.code, s.value); toast(`Pedido ${s.dataset.code}: ${S.statusLabel(s.value)}`); render(); }; });
-      };
-      render();
+        let t;
+        box.querySelector('#oq').oninput = (e) => { orderFilter.q = e.target.value; clearTimeout(t); t = setTimeout(() => render(true), 250); };
+        if (keepFocus) { const i = box.querySelector('#oq'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+        box.querySelectorAll('.status-select').forEach((sel) => {
+          sel.onchange = async () => {
+            sel.disabled = true;
+            let tracking = '';
+            if (sel.value === 'enviado') tracking = box.querySelector(`#tr-${sel.dataset.code}`)?.value || '';
+            try { await api.admin.setOrderStatus(sel.dataset.code, sel.value, tracking); toast(`Pedido ${sel.dataset.code}: ${S.statusLabel(sel.value)}`); } catch (e) { toast(e.message); }
+            render();
+          };
+        });
+      });
+      return render();
     },
   };
 }
@@ -184,8 +221,8 @@ function productsAdmin() {
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#pp');
-      const render = () => {
-        const list = S.products();
+      const render = () => safe(box, async () => {
+        const list = await api.admin.products();
         box.innerHTML = `<div class="admin-head"><div><p class="eyebrow">Produtos e estoque</p><h1 class="h2">Catálogo</h1></div></div>
           <p class="fine">Altere preço, estoque, mínimo de alerta, tipo de venda e se o produto aparece na loja. As mudanças valem na hora.</p>
           <div class="table-wrap"><table class="table table-edit">
@@ -218,33 +255,35 @@ function productsAdmin() {
             </form></details>`;
         box.querySelectorAll('tr[data-id]').forEach((tr) => {
           tr.querySelectorAll('[data-f]').forEach((el) => {
-            el.onchange = () => {
+            el.onchange = async () => {
               const f = el.dataset.f;
               const v = f === 'active' ? el.checked : f === 'mode' ? el.value : Math.max(0, Number(el.value) || 0);
-              S.updateProduct(tr.dataset.id, { [f]: v });
-              toast('Produto atualizado');
+              el.disabled = true;
+              try { await api.admin.updateProduct(tr.dataset.id, { [f]: v }); toast('Produto atualizado'); } catch (e) { toast(e.message); }
               render();
             };
           });
         });
-        box.querySelector('#np').onsubmit = (e) => {
+        box.querySelector('#np').onsubmit = async (e) => {
           e.preventDefault();
           const $ = (s) => box.querySelector(s);
           if (!$('#np-name').value.trim() || $('#np-price').value === '') { toast('Preencha nome e preço'); return; }
           const name = $('#np-name').value.trim();
-          S.addProduct({
+          const btn = box.querySelector('#np button[type="submit"]');
+          btn.disabled = true;
+          try { await api.admin.createProduct({
             id: 'novo-' + Date.now().toString(36), name, category: $('#np-cat').value, collection: $('#np-coll').value,
             price: Number($('#np-price').value), mode: $('#np-mode').value, stock: Number($('#np-stock').value) || 0, lowStock: 3,
             productionDays: Number($('#np-days').value) || 3, short: $('#np-desc').value.trim().slice(0, 80) || 'Novidade da Fan Joy Store.',
             description: $('#np-desc').value.trim() || 'Novidade da Fan Joy Store.', details: ['Produto cadastrado pelo painel'], variations: [],
             art: { kind: 'default', bg: 'cream' },
             personalization: $('#np-pz').checked ? { label: 'Nome ou frase', max: 20, placeholder: 'Ex.: seu nome' } : null,
-          });
+          }); } catch (ex) { toast(ex.message); btn.disabled = false; return; }
           toast(`${name} cadastrado e já aparece na loja`);
           render();
         };
-      };
-      render();
+      });
+      return render();
     },
   };
 }
@@ -255,8 +294,8 @@ function requestsAdmin() {
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#pr');
-      const render = () => {
-        const list = S.getRequests();
+      const render = () => safe(box, async () => {
+        const list = await api.admin.requests();
         box.innerHTML = `<div class="admin-head"><div><p class="eyebrow">Encomendas e orçamentos</p><h1 class="h2">Solicitações recebidas</h1></div></div>
           <div class="req-list">${list.map((r) => `<article class="panel req-card">
             <header><span class="kchip ${r.type === 'orcamento' ? 'k-encomenda' : 'k-novo'}">${r.type === 'orcamento' ? 'Brinde corporativo' : 'Encomenda personalizada'}</span><strong>${r.id}</strong><span class="fine">${fmtDateTime(r.createdAt)}</span></header>
@@ -266,9 +305,14 @@ function requestsAdmin() {
             ${r.files?.length ? `<p class="fine">Referências: ${r.files.map(esc).join(', ')}</p>` : ''}
             <label class="field"><span>Situação</span><select data-id="${r.id}">${[['novo', 'Nova'], ['respondido', 'Proposta enviada'], ['aprovado', 'Aprovada'], ['recusado', 'Não seguiu']].map(([v, l]) => `<option value="${v}" ${r.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
           </article>`).join('')}</div>`;
-        box.querySelectorAll('select[data-id]').forEach((s) => { s.onchange = () => { S.setRequestStatus(s.dataset.id, s.value); toast('Situação atualizada'); render(); }; });
-      };
-      render();
+        box.querySelectorAll('select[data-id]').forEach((sel) => {
+          sel.onchange = async () => {
+            try { await api.admin.setRequestStatus(sel.dataset.id, sel.value); toast('Situação atualizada'); } catch (e) { toast(e.message); }
+            render();
+          };
+        });
+      });
+      return render();
     },
   };
 }
@@ -288,8 +332,8 @@ function reports() {
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#rp');
-      const render = () => {
-        const a = S.analytics(period);
+      const render = () => safe(box, async () => {
+        const a = await api.admin.dashboard(period);
         const rows = [...a.rows].sort((x, y) => {
           const v = (r) => (reportSort.key === 'name' ? r.p.name : reportSort.key === 'stock' ? (r.p.mode === 'pronta' ? r.p.stock : -1) : r[reportSort.key]);
           return (v(x) > v(y) ? 1 : v(x) < v(y) ? -1 : 0) * reportSort.dir;
@@ -339,8 +383,8 @@ function reports() {
           out.value = csv;
           navigator.clipboard?.writeText(csv.replace(/;/g, '\t').replace(/"/g, '')).then(() => toast('Relatório copiado. Cole na planilha.'), () => { out.hidden = false; out.select(); toast('Selecione o texto abaixo e copie'); });
         };
-      };
-      render();
+      });
+      return render();
     },
   };
 }
@@ -373,9 +417,25 @@ function optionalSystem() {
   };
 }
 
+const VIEWS = { painel: overview, 'painel-pedidos': ordersAdmin, 'painel-produtos': productsAdmin, 'painel-solicitacoes': requestsAdmin, 'painel-relatorios': reports, 'sistema-opcional': optionalSystem };
+
+// Toda página do painel passa por aqui: confere a sessão, mostra o login se precisar e carrega os contadores do menu.
 export function adminRoute(route) {
-  const admin = ['painel', 'painel-pedidos', 'painel-produtos', 'painel-solicitacoes', 'painel-relatorios', 'sistema-opcional'];
-  if (!admin.includes(route)) return null;
-  if (!isAuthed()) return login();
-  return { painel: overview, 'painel-pedidos': ordersAdmin, 'painel-produtos': productsAdmin, 'painel-solicitacoes': requestsAdmin, 'painel-relatorios': reports, 'sistema-opcional': optionalSystem }[route]();
+  if (!VIEWS[route]) return null;
+  return {
+    html: `<section class="section page-top"><div class="wrap">${loading}</div></section>`,
+    async mount(root) {
+      const show = async () => {
+        let prof = null;
+        try { prof = await api.admin.session(); } catch { prof = null; }
+        if (location.hash.slice(1) !== route && !(route === 'painel' && !location.hash)) return;
+        if (!prof) { const l = login(show); root.innerHTML = l.html; l.mount(root); return; }
+        try { await refreshCounts(); } catch { /* o menu fica sem contadores */ }
+        const v = VIEWS[route]();
+        root.innerHTML = v.html;
+        await v.mount(root);
+      };
+      await show();
+    },
+  };
 }

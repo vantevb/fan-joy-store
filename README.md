@@ -34,6 +34,14 @@ Oito produtos criados a partir das artes da Lilian (“Tá bom!” e “Gostoso!
 **Sistema opcional** (`#sistema-opcional`)
 Apresentação do sistema de gestão integrado (financeiro, custos e margem, produção, notas fiscais, relatórios e acessos), separado da loja, com escopo e contratação próprios.
 
+## Demonstração e loja real
+
+O arquivo `js/config.js` decide o modo:
+- **vazio**: modo demonstração, com dados salvos só no navegador;
+- **com URL e chave do Supabase**: loja real, com banco de dados, login do painel e regras de segurança.
+
+Veja [docs/backend.md](docs/backend.md) para configurar o Supabase e para o que falta (pagamento, frete real e e-mails).
+
 ## Como rodar
 
 O site é estático (HTML, CSS e JavaScript, sem etapa de build). Qualquer servidor de arquivos serve:
@@ -49,12 +57,18 @@ Os dados da demonstração (sacola, pedidos, ajustes do painel) ficam no `localS
 
 ## Testes
 
-Os testes de ponta a ponta cobrem os fluxos de compra e de gestão e verificam que não há rolagem lateral no celular.
-
 ```bash
 npm i -D playwright && npx playwright install chromium
+
+# Site no modo demonstração: fluxos de compra e de gestão, e celular sem rolagem lateral
 python3 -m http.server 8080 &
 node tests/e2e.cjs http://localhost:8080
+
+# Banco de dados (requer PostgreSQL 15+ local)
+bash tools/testar-banco.sh
+
+# Site no modo loja real, contra o banco local
+bash tools/testar-loja-real.sh
 ```
 
 ## Estrutura
@@ -63,19 +77,25 @@ node tests/e2e.cjs http://localhost:8080
 fan-joy-store/
   index.html          página única
   css/styles.css      identidade visual e layout
+  js/config.js        conexão com o Supabase (vazio = demonstração)
+  js/api.js           camada de dados: demonstração ou banco real
+  js/vendor/          cliente oficial do Supabase (supabase-js 2.45.4, licença MIT)
   js/data.js          catálogo, coleções, categorias, status e perguntas frequentes
-  js/state.js         sacola, pedidos, estoque, frete simulado e indicadores
+  js/state.js         sacola, dados da demonstração, frete simulado e indicadores
   js/ui.js            formatação, ilustrações demonstrativas e ícones
   js/store.js         páginas da loja
   js/admin.js         painel de gestão e sistema opcional
   js/app.js           rotas, cabeçalho, sacola e rodapé
   img/                artes da Lilian e logo em WebP
-  tests/e2e.cjs       testes dos fluxos
-  docs/               guia de uso, escopo e checklist de abertura
+  supabase/           migração do banco, catálogo inicial (seed) e testes do banco
+  tools/              gerador do seed e scripts de teste
+  tests/              testes de ponta a ponta (demonstração e loja real)
+  docs/               back-end, guia de uso, escopo e checklist de abertura
 ```
 
 ## Documentos
 
+- [Back-end: configuração do Supabase e próximos passos](docs/backend.md)
 - [Guia de uso para a Lilian](docs/guia-da-lilian.md)
 - [Escopo da loja e sistema opcional](docs/escopo.md)
 - [Checklist para abrir as vendas](docs/checklist-abertura.md)

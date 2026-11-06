@@ -1,5 +1,6 @@
 // Roteamento por hash (#inicio, #loja, #p-caneca-ta-bom...) e estrutura comum (cabeçalho, sacola, rodapé).
 import * as S from './state.js';
+import * as api from './api.js';
 import { storeRoute, notFound, openDrawer, closeDrawer, renderDrawer } from './store.js';
 import { adminRoute } from './admin.js';
 import { icon } from './ui.js';
@@ -12,7 +13,7 @@ const TITLES = {
 
 function header() {
   return `
-  <div class="demo-bar" role="note">Apresentação demonstrativa · produtos e preços ilustrativos · nenhum pagamento real</div>
+  <div class="demo-bar" role="note">${api.live ? 'Loja em fase de testes · pagamento on-line ainda não ativado' : 'Apresentação demonstrativa · produtos e preços ilustrativos · nenhum pagamento real'}</div>
   <header class="site-header">
     <div class="wrap header-row">
       <a class="brand" href="#inicio" aria-label="Fan Joy Store, página inicial">
@@ -138,4 +139,11 @@ menuBtn.onclick = () => {
 S.subscribe(() => { updateCount(); if (!document.getElementById('drawer').hidden) renderDrawer(); });
 window.addEventListener('hashchange', navigate);
 updateCount();
-render();
+// Na loja real, o catálogo vem do banco antes da primeira página.
+if (api.live) view.innerHTML = '<section class="section page-top"><div class="wrap"><p class="muted" role="status">Carregando a loja…</p></div></section>';
+api.init().catch((e) => {
+  console.error(e);
+  S.setLiveCatalog([]);
+  render();
+  view.insertAdjacentHTML('afterbegin', '<div class="wrap"><p class="error" role="alert">Não foi possível carregar os produtos agora. Verifique sua internet e recarregue a página.</p></div>');
+}).then(() => { if (!render.started) render(); });

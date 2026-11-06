@@ -1,6 +1,7 @@
 // Páginas da loja: início, catálogo, produto, sacola, checkout, pedidos e páginas institucionais.
 import { FAQ, BRAND } from './data.js';
 import * as S from './state.js';
+import * as api from './api.js';
 import { brl, esc, priceLabel, productMedia, toast, icon, fmtDateTime } from './ui.js';
 
 const go = (hash) => { location.hash = hash; };
@@ -535,7 +536,7 @@ function checkout() {
   return {
     html: `<section class="section page-top"><div class="wrap">
       <p class="eyebrow">Finalizar compra · demonstração</p><h1 class="h1">Quase lá.</h1>
-      <p class="notice">Nenhum pagamento é cobrado nesta apresentação. Não use dados reais de cartão.</p>
+      <p class="notice">${api.live ? 'Loja em fase de testes: o pagamento on-line ainda não está ativado. Depois do pedido, a Fan Joy Store entra em contato para combinar o pagamento.' : 'Nenhum pagamento é cobrado nesta apresentação. Não use dados reais de cartão.'}</p>
       <form id="co" class="checkout" novalidate>
         <div class="co-main">
           <fieldset class="co-step"><legend><span class="step-n">1</span> Seus dados</legend>
@@ -560,14 +561,15 @@ function checkout() {
               <label class="pay"><input type="radio" name="pay" value="cartao"><span><strong>Cartão de crédito</strong> · até 3× sem juros</span></label>
             </div>
             <div id="card" class="card-form" hidden>
-              <div class="row2">
+              ${api.live ? `<div class="row2"><label class="field field-wide" for="cc-inst"><span>Parcelas</span><select id="cc-inst"></select></label></div>
+              <p class="fine">O pagamento com cartão ainda está sendo ativado. Depois do pedido, a Fan Joy Store envia um link seguro de pagamento.</p>` : `<div class="row2">
                 <label class="field field-wide" for="cc-num"><span>Número do cartão</span><input id="cc-num" inputmode="numeric" autocomplete="off" placeholder="4111 1111 1111 1111"></label>
                 <label class="field field-wide" for="cc-name"><span>Nome impresso no cartão</span><input id="cc-name" autocomplete="off"></label>
                 <label class="field" for="cc-exp"><span>Validade</span><input id="cc-exp" placeholder="MM/AA" autocomplete="off" maxlength="5"></label>
                 <label class="field" for="cc-cvv"><span>CVV</span><input id="cc-cvv" inputmode="numeric" autocomplete="off" maxlength="4"></label>
                 <label class="field field-wide" for="cc-inst"><span>Parcelas</span><select id="cc-inst"></select></label>
               </div>
-              <p class="fine">Para testar, use 4111 1111 1111 1111. Na loja definitiva, os dados do cartão vão direto para a empresa de pagamentos e nunca ficam salvos aqui.</p>
+              <p class="fine">Para testar, use 4111 1111 1111 1111. Na loja definitiva, os dados do cartão vão direto para a empresa de pagamentos e nunca ficam salvos aqui.</p>`}
             </div>
           </fieldset>
           <p class="error" id="co-error" role="alert" hidden></p>
@@ -597,10 +599,10 @@ function checkout() {
         inst.innerHTML = [1, 2, 3].map((n) => `<option value="${n}">${n}× de ${brl(total / n)} sem juros</option>`).join('');
       };
       root.querySelectorAll('input[name="pay"]').forEach((r) => { r.onchange = update; });
-      $('#cc-num').oninput = (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 '); };
-      $('#cc-exp').oninput = (e) => { const d = e.target.value.replace(/\D/g, '').slice(0, 4); e.target.value = d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d; };
+      if (!api.live) $('#cc-num').oninput = (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 '); };
+      if (!api.live) $('#cc-exp').oninput = (e) => { const d = e.target.value.replace(/\D/g, '').slice(0, 4); e.target.value = d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d; };
       update();
-      $('#co').onsubmit = (e) => {
+      $('#co').onsubmit = async (e) => {
         e.preventDefault();
         const err = $('#co-error');
         const missing = [...root.querySelectorAll('.co-main input[required]')].filter((i) => !i.value.trim());
@@ -610,7 +612,7 @@ function checkout() {
         if (!/^\S+@\S+\.\S+$/.test($('#c-email').value)) return fail('Confira o e-mail: ele precisa ter o formato nome@provedor.com.', [$('#c-email')]);
         const method = root.querySelector('input[name="pay"]:checked').value;
         let last4 = null;
-        if (method === 'cartao') {
+        if (method === 'cartao' && !api.live) {
           const num = $('#cc-num').value;
           if (!luhn(num)) return fail('O número do cartão não é válido. Para testar, use 4111 1111 1111 1111.', [$('#cc-num')]);
           const [mm, yy] = $('#cc-exp').value.split('/').map(Number);
@@ -621,14 +623,22 @@ function checkout() {
           last4 = num.replace(/\D/g, '').slice(-4);
         }
         err.hidden = true;
-        const order = S.createOrder({
-          customer: { name: $('#c-name').value.trim(), email: $('#c-email').value.trim(), phone: $('#c-phone').value.trim(), city: $('#c-city')?.value.trim() || 'São Paulo, SP' },
-          shipping: { id: chosenShip.id, name: chosenShip.name, price: chosenShip.price, days: chosenShip.days, cep },
-          payment: { method, installments: method === 'cartao' ? Number(inst.value) : 1, last4 },
-          lines: S.cartLines(),
-        });
-        S.clearCart();
-        go(`#pedido-${order.code}`);
+        const place = $('#place');
+        place.disabled = true; place.textContent = 'Enviando pedido…';
+        try {
+          const order = await api.placeOrder({
+            customer: { name: $('#c-name').value.trim(), email: $('#c-email').value.trim(), phone: $('#c-phone').value.trim(), city: $('#c-city')?.value.trim() || 'São Paulo, SP' },
+            address: chosenShip.id === 'retirada' ? {} : { street: $('#c-street').value.trim(), number: $('#c-num').value.trim(), complement: $('#c-comp').value.trim(), city: $('#c-city').value.trim(), cep },
+            shipping: { id: chosenShip.id, name: chosenShip.name, price: chosenShip.price, days: chosenShip.days, cep },
+            payment: { method, installments: method === 'cartao' ? Number(inst.value) : 1, last4 },
+            lines: S.cartLines(),
+          });
+          S.clearCart();
+          go(`#pedido-${order.code}`);
+        } catch (ex) {
+          place.disabled = false; place.textContent = 'Confirmar pedido';
+          fail(ex.message, []);
+        }
       };
     },
   };
@@ -649,18 +659,17 @@ function pixPattern(code) {
 }
 
 const FLOW = ['aguardando', 'pago', 'producao', 'enviado', 'entregue'];
-function orderPage(code) {
-  const o = S.getOrder(code);
-  if (!o) return { html: `<section class="section page-top"><div class="wrap"><h1 class="h1">Pedido não encontrado</h1><p>Não encontramos o pedido ${esc(code)} neste navegador. <a href="#pedidos">Buscar outro pedido</a>.</p></div></section>` };
+function orderView(o) {
   const idx = FLOW.indexOf(o.status);
+  const demo = api.canSimulatePayment;
   const pixCode = `00020126-FANJOY-DEMO-${o.code}-NAO-PAGAVEL`;
-  return {
-    html: `<section class="section page-top"><div class="wrap order">
+  return `<section class="section page-top"><div class="wrap order">
       <p class="eyebrow">Pedido ${esc(o.code)} · ${fmtDateTime(o.createdAt)}</p>
-      <h1 class="h1">${o.status === 'aguardando' ? 'Pedido recebido. Falta o Pix.' : o.status === 'cancelado' ? 'Pedido cancelado.' : 'Obrigada pelo pedido!'}</h1>
-      <p class="notice">Pedido de demonstração: nada foi cobrado e nada será enviado.</p>
+      <h1 class="h1">${o.status === 'aguardando' ? (o.payment.method === 'pix' ? 'Pedido recebido. Falta o Pix.' : 'Pedido recebido. Falta o pagamento.') : o.status === 'cancelado' ? 'Pedido cancelado.' : 'Obrigada pelo pedido!'}</h1>
+      <p class="notice">${demo ? 'Pedido de demonstração: nada foi cobrado e nada será enviado.' : 'Loja em fase de testes: o pagamento on-line ainda não está ativado. A Fan Joy Store vai entrar em contato para combinar o pagamento.'}</p>
       ${o.status === 'cancelado' ? '' : `<ol class="timeline" aria-label="Andamento do pedido">${FLOW.map((s, i) => `<li class="${i <= idx ? 'is-done' : ''} ${i === idx ? 'is-now' : ''}"><span></span>${esc(S.statusLabel(s))}</li>`).join('')}</ol>`}
-      ${o.status === 'aguardando' && o.payment.method === 'pix' ? `<div class="pix-box">
+      ${o.trackingCode ? `<p class="notice">Código de rastreio: <strong>${esc(o.trackingCode)}</strong></p>` : ''}
+      ${o.status === 'aguardando' && o.payment.method === 'pix' && demo ? `<div class="pix-box">
         ${pixPattern(o.code)}
         <div><h2 class="h3">Pague ${brl(o.total)} com Pix</h2>
           <p>Na loja definitiva, este QR Code é gerado pela empresa de pagamentos e a confirmação chega sozinha em segundos.</p>
@@ -672,24 +681,38 @@ function orderPage(code) {
           <h2 class="h3">Itens</h2>
           <ul class="mini-lines">${o.items.map((it) => `<li><span>${it.qty}× ${esc(it.name)}${Object.values(it.options || {}).length ? ` <small>${esc(Object.values(it.options).join(' · '))}</small>` : ''}${it.personalization ? ` <small>“${esc(it.personalization)}”</small>` : ''}</span><span>${brl(it.unit * it.qty)}</span></li>`).join('')}</ul>
           <p class="sum-row"><span>Subtotal</span><span>${brl(o.subtotal)}</span></p>
-          ${o.discount ? `<p class="sum-row"><span>Desconto Pix</span><span>− ${brl(o.discount)}</span></p>` : ''}
-          <p class="sum-row"><span>Frete · ${esc(o.shipping.name)}</span><span>${o.shippingPrice ? brl(o.shippingPrice) : 'Grátis'}</span></p>
-          <p class="sum-row sum-total"><span>Total</span><strong>${brl(o.total)}</strong></p>
+          ${Number(o.discount) ? `<p class="sum-row"><span>Desconto Pix</span><span>− ${brl(Number(o.discount))}</span></p>` : ''}
+          <p class="sum-row"><span>Frete · ${esc(o.shipping.name)}</span><span>${Number(o.shippingPrice) ? brl(Number(o.shippingPrice)) : 'Grátis'}</span></p>
+          <p class="sum-row sum-total"><span>Total</span><strong>${brl(Number(o.total))}</strong></p>
         </div>
         <div class="order-side">
           <h2 class="h3">Entrega e pagamento</h2>
           <p>${esc(o.customer.name)}<br>${esc(o.customer.email)}</p>
           <p>${esc(o.shipping.name)}${o.shipping.days ? ` · até ${o.shipping.days} dias úteis` : ''}</p>
-          <p>${o.payment.method === 'pix' ? 'Pix' : `Cartão final ${esc(o.payment.last4 || '••••')} · ${o.payment.installments}×`}</p>
+          <p>${o.payment.method === 'pix' ? 'Pix' : `Cartão${o.payment.last4 ? ` final ${esc(o.payment.last4)}` : ''} · ${o.payment.installments}×`}</p>
           <h2 class="h3">Histórico</h2>
           <ul class="history">${o.history.map((h) => `<li>${fmtDateTime(h.at)} · ${esc(S.statusLabel(h.status))}</li>`).join('')}</ul>
           <a class="link" href="#pedidos">Acompanhar outros pedidos ${icon.arrow}</a>
         </div>
       </div>
-    </div></section>`,
-    mount(root) {
+    </div></section>`;
+}
+
+function orderPage(code) {
+  const notFoundHtml = `<section class="section page-top"><div class="wrap narrow-wrap"><h1 class="h1">Pedido não encontrado</h1><p>Não encontramos o pedido ${esc(code)} neste navegador. Busque pelo número e pelo e-mail usado na compra.</p><a class="btn btn-primary" href="#pedidos">Buscar pedido</a></div></section>`;
+  return {
+    html: '<section class="section page-top"><div class="wrap"><p class="muted" role="status">Carregando pedido…</p></div></section>',
+    async mount(root) {
+      let o;
+      try { o = await api.getOrder(code); } catch (e) {
+        root.innerHTML = `<section class="section page-top"><div class="wrap narrow-wrap"><h1 class="h1">Não foi possível abrir o pedido</h1><p>${esc(e.message)}</p><a class="btn btn-ghost" href="#pedidos">Voltar</a></div></section>`;
+        return;
+      }
+      if (location.hash.slice(1) !== `pedido-${code}`) return;
+      if (!o) { root.innerHTML = notFoundHtml; return; }
+      root.innerHTML = orderView(o);
       const sim = root.querySelector('#sim-pay');
-      if (sim) sim.onclick = () => { S.payPix(o.code); toast('Pagamento aprovado (simulação)'); window.dispatchEvent(new HashChangeEvent('hashchange')); };
+      if (sim) sim.onclick = () => { api.simulatePix(o.code); toast('Pagamento aprovado (simulação)'); window.dispatchEvent(new HashChangeEvent('hashchange')); };
       const copy = root.querySelector('#copy-pix');
       if (copy) copy.onclick = () => {
         const input = root.querySelector('#pix-code');
@@ -700,26 +723,29 @@ function orderPage(code) {
 }
 
 function ordersLookup() {
-  const mine = S.getOrders().filter((o) => o.origin === 'loja');
+  const mine = api.myOrders();
   return {
     html: `<section class="section page-top"><div class="wrap narrow-wrap">
       <p class="eyebrow">Meus pedidos</p><h1 class="h1">Acompanhe seu pedido.</h1>
-      <form id="lookup" class="lookup"><label class="field" for="lk-code"><span>Número do pedido</span><input id="lk-code" placeholder="FJ1234" required></label>
+      <form id="lookup" class="lookup"><label class="field" for="lk-code"><span>Número do pedido</span><input id="lk-code" placeholder="FJ123456" required></label>
         <label class="field" for="lk-email"><span>E-mail usado na compra</span><input id="lk-email" type="email" required></label>
         <button class="btn btn-primary" type="submit">Buscar pedido</button></form>
       <p class="error" id="lk-err" role="alert" hidden></p>
       <h2 class="h3">Pedidos feitos neste navegador</h2>
-      ${mine.length ? `<ul class="order-list">${mine.map((o) => `<li><a href="#pedido-${o.code}"><strong>${o.code}</strong><span>${fmtDateTime(o.createdAt)}</span><span class="pill pill-${o.status}">${esc(S.statusLabel(o.status))}</span><span>${brl(o.total)}</span></a></li>`).join('')}</ul>` : '<p class="muted">Você ainda não fez nenhum pedido de demonstração. <a href="#loja">Visite a loja</a> e experimente o checkout.</p>'}
-      <p class="fine">Na loja definitiva, a cliente também recebe o código de rastreio dos Correios por e-mail e WhatsApp.</p>
+      ${mine.length ? `<ul class="order-list">${mine.map((o) => `<li><a href="#pedido-${o.code}"><strong>${o.code}</strong><span>${fmtDateTime(o.at)}</span>${o.status ? `<span class="pill pill-${o.status}">${esc(S.statusLabel(o.status))}</span>` : '<span></span>'}<span>${o.total != null ? brl(o.total) : 'Ver pedido'}</span></a></li>`).join('')}</ul>` : `<p class="muted">Você ainda não fez nenhum pedido${api.live ? '' : ' de demonstração'} neste navegador. <a href="#loja">Visite a loja</a>.</p>`}
+      <p class="fine">Quando o pedido for enviado, o código de rastreio aparece aqui e chega por e-mail.</p>
     </div></section>`,
     mount(root) {
-      root.querySelector('#lookup').onsubmit = (e) => {
+      root.querySelector('#lookup').onsubmit = async (e) => {
         e.preventDefault();
-        const o = S.getOrder(root.querySelector('#lk-code').value.trim());
-        const email = root.querySelector('#lk-email').value.trim().toLowerCase();
         const err = root.querySelector('#lk-err');
-        if (!o || o.customer.email.toLowerCase() !== email) { err.textContent = 'Não encontramos um pedido com esse número e e-mail. Confira os dados no e-mail de confirmação.'; err.hidden = false; return; }
-        go(`#pedido-${o.code}`);
+        const btn = root.querySelector('#lookup button');
+        err.hidden = true; btn.disabled = true;
+        try {
+          const o = await api.getOrder(root.querySelector('#lk-code').value.trim(), root.querySelector('#lk-email').value.trim());
+          if (!o) { err.textContent = 'Não encontramos um pedido com esse número e e-mail. Confira os dados no e-mail de confirmação.'; err.hidden = false; return; }
+          go(`#pedido-${o.code}`);
+        } catch (ex) { err.textContent = ex.message; err.hidden = false; } finally { btn.disabled = false; }
       };
     },
   };
@@ -758,28 +784,31 @@ function requestForm(type) {
         <label class="check"><input type="checkbox" id="r-lgpd" required> Autorizo o contato da Fan Joy Store sobre este pedido, conforme a <a href="#politicas">política de privacidade</a>.</label>
         <p class="error" id="r-err" role="alert" hidden></p>
         <button class="btn btn-primary" type="submit">${corp ? 'Pedir orçamento' : 'Enviar minha ideia'}</button>
-        <p class="fine">Demonstração: a solicitação aparece no painel de gestão, mas nenhum e-mail é enviado.</p>
+        <p class="fine">${api.live ? 'A Lilian recebe a sua solicitação no painel da loja e responde pelo e-mail ou WhatsApp informado.' : 'Demonstração: a solicitação aparece no painel de gestão, mas nenhum e-mail é enviado.'}</p>
       </form>
       <div id="req-ok" class="req-ok" hidden></div>
     </div></section>`,
     mount(root) {
       const $ = (s) => root.querySelector(s);
-      $('#req').onsubmit = (e) => {
+      $('#req').onsubmit = async (e) => {
         e.preventDefault();
         const req = [...root.querySelectorAll('#req [required]')].filter((i) => (i.type === 'checkbox' ? !i.checked : !i.value.trim()));
         root.querySelectorAll('.is-invalid').forEach((i) => i.classList.remove('is-invalid'));
         const err = $('#r-err');
         if (req.length) { err.textContent = 'Preencha os campos destacados e aceite o contato para enviar.'; err.hidden = false; req.forEach((i) => i.classList.add('is-invalid')); req[0].focus(); return; }
         if (corp && Number($('#r-qty').value) < 20) { err.textContent = 'Para brindes corporativos, o mínimo é de 20 unidades.'; err.hidden = false; $('#r-qty').focus(); return; }
-        const r = S.addRequest({
+        const sendBtn = $('#req button[type="submit"]');
+        sendBtn.disabled = true;
+        let r;
+        try { r = await api.submitRequest({
           type, name: $('#r-name').value.trim(), company: $('#r-company')?.value.trim(), email: $('#r-email').value.trim(),
           phone: $('#r-phone').value.trim(), product: $('#r-product').value, qty: Number($('#r-qty').value), date: $('#r-date').value,
           message: $('#r-msg').value.trim(), files: [...$('#r-file').files].map((f) => f.name),
-        });
+        }); } catch (ex) { err.textContent = ex.message; err.hidden = false; sendBtn.disabled = false; return; }
         $('#req').hidden = true;
         const ok = $('#req-ok');
         ok.hidden = false;
-        ok.innerHTML = `<h2 class="h3">Recebemos sua ${corp ? 'solicitação de orçamento' : 'ideia'}.</h2><p>Protocolo <strong>${r.id}</strong>. Na loja definitiva, a Lilian responde em até 2 dias úteis pelo e-mail ou WhatsApp informado.</p><a class="btn btn-ghost" href="#loja">Voltar para a loja</a>`;
+        ok.innerHTML = `<h2 class="h3">Recebemos sua ${corp ? 'solicitação de orçamento' : 'ideia'}.</h2><p>Protocolo <strong>${esc(r.code)}</strong>. Na loja definitiva, a Lilian responde em até 2 dias úteis pelo e-mail ou WhatsApp informado.</p><a class="btn btn-ghost" href="#loja">Voltar para a loja</a>`;
         ok.focus?.();
       };
     },

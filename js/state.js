@@ -24,7 +24,13 @@ const overrides = load('overrides', {}); // { [id]: { price, stock, active, mode
 const custom = load('customProducts', []);
 const now0 = Date.now();
 
+// No modo loja real, o catálogo vem do banco (ver js/api.js).
+let liveCatalog = null;
+export function setLiveCatalog(list) { liveCatalog = list.map((p) => ({ active: true, variations: [], details: [], ...p })); emit(); }
+export const isLive = () => liveCatalog !== null;
+
 export function products() {
+  if (liveCatalog) return liveCatalog;
   return [...PRODUCTS, ...custom].map((p) => {
     const o = overrides[p.id] || {};
     const merged = { active: true, variations: [], details: [], ...p, ...o };
@@ -275,6 +281,11 @@ export function analytics({ days = 30, category = '', collection = '' } = {}) {
     const w = Math.min(weeks - 1, Math.floor((o.createdAt - since) / (7 * DAY)));
     for (const it of o.items) if (ids.has(it.id)) weekly[w].revenue += it.unit * it.qty;
   }
+  return summarize({ rows, all, revenue, orderCount, items, weekly });
+}
+
+// Monta as listas do painel a partir das linhas por produto (usado na demonstração e no banco real).
+export function summarize({ rows, all, revenue, orderCount, items, weekly }) {
   const comparable = rows.filter((r) => r.kind === 'regular');
   return {
     rows,
