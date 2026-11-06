@@ -76,6 +76,7 @@ export function addToCart(id, qty, options, personalization) {
   if (line) line.qty = Math.min(line.qty + qty, 20);
   else cart.push({ key, id, qty, options: options || {}, personalization: personalization || '' });
   persistCart();
+  return key;
 }
 export function setQty(key, qty) {
   const line = cart.find((l) => l.key === key);

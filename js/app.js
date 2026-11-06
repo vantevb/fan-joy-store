@@ -74,9 +74,43 @@ function updateCount() {
   document.getElementById('bag-btn').setAttribute('aria-label', `Abrir sacola, ${n} ${n === 1 ? 'item' : 'itens'}`);
 }
 
+// Imagem do cartão clicado: vira a imagem principal da página do produto (transição de "morph").
+let morphFrom = null;
+let clickNav = false;
+document.addEventListener('click', (e) => {
+  const anchor = e.target.closest('a[href^="#"]');
+  clickNav = !!anchor;
+  const link = e.target.closest('a.card-link, a.line-media, a.line-name');
+  morphFrom = link?.getAttribute('href')?.startsWith('#p-') ? (link.querySelector('.card-media, .line-media') || link) : null;
+});
+const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function navigate() {
+  if (!render.started) { render(); return; }
+  if (reduceMotion()) { render(); return; }
+  // Transição animada só quando a pessoa clica num link; demais trocas renderizam na hora, com um fade leve.
+  if (document.startViewTransition && clickNav) {
+    const from = morphFrom;
+    const toProduct = location.hash.startsWith('#p-');
+    if (from && toProduct && from.isConnected) from.style.viewTransitionName = 'product-media';
+    const t = document.startViewTransition(() => {
+      if (from) from.style.viewTransitionName = '';
+      render();
+      if (from && toProduct) view.querySelector('.pdp-main')?.style.setProperty('view-transition-name', 'product-media');
+    });
+    t.ready.catch(() => {});
+    t.finished.catch(() => {}).finally(() => { view.querySelector('.pdp-main')?.style.removeProperty('view-transition-name'); });
+  } else {
+    render();
+    view.classList.remove('view-enter'); void view.offsetWidth; view.classList.add('view-enter');
+  }
+  morphFrom = null;
+  clickNav = false;
+}
+
 function render() {
   const route = decodeURIComponent(location.hash.slice(1)) || 'inicio';
-  closeDrawer();
+  closeDrawer(true);
   nav.classList.remove('is-open');
   menuBtn.setAttribute('aria-expanded', 'false');
   let r = adminRoute(route) ?? storeRoute(route) ?? notFound();
@@ -88,12 +122,12 @@ function render() {
   nav.querySelectorAll('a').forEach((a) => a.classList.toggle('is-on', a.dataset.nav === route || (base === 'colecao' && a.dataset.nav === 'colecoes') || (base === 'categoria' && a.dataset.nav === 'loja')));
   const h1 = view.querySelector('h1');
   document.title = route === 'inicio' ? 'Fan Joy Store' : `${TITLES[route] || h1?.textContent?.trim() || 'Fan Joy Store'} · Fan Joy Store`;
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   if (render.started) view.focus({ preventScroll: true });
   render.started = true;
 }
 
-document.getElementById('bag-btn').onclick = openDrawer;
+document.getElementById('bag-btn').onclick = () => openDrawer();
 document.getElementById('drawer').addEventListener('click', (e) => { if (e.target.closest('[data-close]')) closeDrawer(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
 menuBtn.onclick = () => {
@@ -102,6 +136,6 @@ menuBtn.onclick = () => {
   menuBtn.setAttribute('aria-expanded', String(open));
 };
 S.subscribe(() => { updateCount(); if (!document.getElementById('drawer').hidden) renderDrawer(); });
-window.addEventListener('hashchange', render);
+window.addEventListener('hashchange', navigate);
 updateCount();
 render();

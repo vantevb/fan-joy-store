@@ -392,26 +392,45 @@ function productPage(id) {
       });
       const pz = root.querySelector('#pz');
       if (pz) pz.oninput = () => { root.querySelector('#pz-count').textContent = `${pz.value.length}/${p.personalization.max}`; };
+      const addLabel = add.innerHTML;
       add.onclick = () => {
-        S.addToCart(p.id, clampQty(qty.value), { ...selected }, pz ? pz.value.trim() : '');
-        openDrawer();
-        toast('Adicionado à sacola');
+        if (add.classList.contains('is-added')) return;
+        const key = S.addToCart(p.id, clampQty(qty.value), { ...selected }, pz ? pz.value.trim() : '');
+        const count = document.getElementById('bag-count');
+        count.classList.remove('is-bump'); void count.offsetWidth; count.classList.add('is-bump');
+        add.classList.add('is-added');
+        add.innerHTML = '<svg class="check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Adicionado';
+        // Pequena pausa para a confirmação no botão ser vista antes de a sacola abrir
+        const here = location.hash;
+        setTimeout(() => { if (location.hash === here) openDrawer(key); }, reduceMotion() ? 0 : 280);
+        setTimeout(() => { add.classList.remove('is-added'); add.innerHTML = addLabel; }, 1600);
       };
     },
   };
 }
 
 // ---------- Sacola (gaveta e página) ----------
-export function openDrawer() {
+const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let justAdded = null;
+export function openDrawer(addedKey = null) {
   const d = document.getElementById('drawer');
+  justAdded = addedKey;
+  clearTimeout(closeDrawer.t);
+  d.classList.remove('is-closing');
   renderDrawer();
+  justAdded = null;
   d.hidden = false;
   document.body.classList.add('no-scroll');
-  d.querySelector('.drawer-close').focus();
+  d.querySelector('.drawer-close').focus({ preventScroll: true });
 }
-export function closeDrawer() {
-  document.getElementById('drawer').hidden = true;
-  document.body.classList.remove('no-scroll');
+// immediate: fecha sem animação (usado na troca de página)
+export function closeDrawer(immediate = false) {
+  const d = document.getElementById('drawer');
+  if (d.hidden) return;
+  const done = () => { d.hidden = true; d.classList.remove('is-closing'); document.body.classList.remove('no-scroll'); };
+  if (immediate === true || reduceMotion()) { done(); return; }
+  d.classList.add('is-closing');
+  closeDrawer.t = setTimeout(done, 240);
 }
 function lineHTML(l, compact) {
   const opts = Object.entries(l.options).map(([k, v]) => `${esc(k)}: ${esc(v)}`);
@@ -443,7 +462,8 @@ function bindLines(root, after) {
 export function renderDrawer() {
   const body = document.getElementById('drawer-body');
   const lines = S.cartLines();
-  body.innerHTML = lines.length ? `<ul class="lines">${lines.map((l) => lineHTML(l, true)).join('')}</ul>
+  const added = justAdded && lines.find((l) => l.key === justAdded);
+  body.innerHTML = lines.length ? `${added ? `<p class="drawer-added" role="status"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>${esc(added.product.name)} foi para a sacola</p>` : ''}<ul class="lines">${lines.map((l) => lineHTML(l, true).replace('class="line"', l.key === justAdded ? 'class="line is-new"' : 'class="line"')).join('')}</ul>
     <div class="drawer-foot">
       <p class="sum-row"><span>Subtotal</span><strong>${brl(S.cartSubtotal())}</strong></p>
       <p class="fine">Frete e desconto do Pix calculados na sacola.</p>
