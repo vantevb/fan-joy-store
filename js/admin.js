@@ -25,6 +25,20 @@ const kindChip = (k) => `<span class="kchip ${KIND[k].cls}">${KIND[k].label}</sp
 const period = { days: 30, category: '', collection: '' };
 
 let counts = { pending: 0, newReq: 0 };
+let countsLoaded = false;
+// Atualiza só os números do menu, sem redesenhar a página.
+function updateNavCounts(root) {
+  const set = (id, n) => {
+    const a = root.querySelector(`.admin-nav a[href="#${id}"]`);
+    if (!a) return;
+    let b = a.querySelector('.count');
+    if (!n) { b?.remove(); return; }
+    if (!b) { b = document.createElement('b'); b.className = 'count'; a.append(' ', b); }
+    b.textContent = n;
+  };
+  set('painel-pedidos', counts.pending);
+  set('painel-solicitacoes', counts.newReq);
+}
 async function refreshCounts() {
   const [orders, reqs] = await Promise.all([api.admin.orders(), api.admin.requests()]);
   counts = { pending: orders.filter((o) => ['aguardando', 'pago', 'producao'].includes(o.status)).length, newReq: reqs.filter((r) => r.status === 'novo').length };
@@ -51,7 +65,7 @@ function shell(active, content) {
   </section>`;
 }
 function bindShell(root) {
-  root.querySelector('#adm-out').onclick = async () => { await api.admin.signOut(); location.hash = '#inicio'; };
+  root.querySelector('#adm-out').onclick = async () => { await api.admin.signOut(); countsLoaded = false; location.hash = '#inicio'; };
   const reset = root.querySelector('#adm-reset');
   if (reset) reset.onclick = () => {
     if (reset.dataset.armed) { S.resetDemo(); return; }
@@ -430,7 +444,10 @@ export function adminRoute(route) {
         try { prof = await api.admin.session(); } catch { prof = null; }
         if (location.hash.slice(1) !== route && !(route === 'painel' && !location.hash)) return;
         if (!prof) { const l = login(show); root.innerHTML = l.html; l.mount(root); return; }
-        try { await refreshCounts(); } catch { /* o menu fica sem contadores */ }
+        // Na primeira abertura espera os contadores do menu; nas trocas de aba usa os últimos
+        // e atualiza em segundo plano, para a aba não esperar duas consultas seguidas.
+        if (!countsLoaded) { try { await refreshCounts(); countsLoaded = true; } catch { /* o menu fica sem contadores */ } }
+        else refreshCounts().then(() => updateNavCounts(root)).catch(() => {});
         const v = VIEWS[route]();
         root.innerHTML = v.html;
         await v.mount(root);

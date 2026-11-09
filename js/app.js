@@ -86,7 +86,22 @@ document.addEventListener('click', (e) => {
 });
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Espera a página nova ficar pronta antes de mostrá-la: os dados do banco (painel, pedido)
+// e as imagens visíveis na tela. Sem isso a página entra vazia e o conteúdo "pula" depois.
+// Tem limite de tempo para a navegação nunca travar se a internet estiver lenta.
+const READY_LIMIT_MS = 900;
+function whenReady(mounted) {
+  const images = () => Promise.all([...view.querySelectorAll('img')]
+    .filter((img) => !img.complete && img.getBoundingClientRect().top < window.innerHeight)
+    .map((img) => img.decode().catch(() => {})));
+  const ready = Promise.resolve(mounted).catch(() => {}).then(images);
+  return Promise.race([ready, new Promise((r) => setTimeout(r, READY_LIMIT_MS))]);
+}
+
+let navSeq = 0;
 function navigate() {
+  const seq = ++navSeq;
+  view.style.opacity = '';
   if (!render.started) { render(); return; }
   if (reduceMotion()) { render(); return; }
   // Transição animada só quando a pessoa clica num link; demais trocas renderizam na hora, com um fade leve.
@@ -94,16 +109,24 @@ function navigate() {
     const from = morphFrom;
     const toProduct = location.hash.startsWith('#p-');
     if (from && toProduct && from.isConnected) from.style.viewTransitionName = 'product-media';
-    const t = document.startViewTransition(() => {
+    const t = document.startViewTransition(async () => {
       if (from) from.style.viewTransitionName = '';
-      render();
+      const mounted = render();
       if (from && toProduct) view.querySelector('.pdp-main')?.style.setProperty('view-transition-name', 'product-media');
+      await whenReady(mounted);
     });
     t.ready.catch(() => {});
     t.finished.catch(() => {}).finally(() => { view.querySelector('.pdp-main')?.style.removeProperty('view-transition-name'); });
   } else {
-    render();
-    view.classList.remove('view-enter'); void view.offsetWidth; view.classList.add('view-enter');
+    const mounted = render();
+    view.classList.remove('view-enter');
+    view.style.opacity = '0';
+    whenReady(mounted).then(() => {
+      if (seq !== navSeq) return; // a pessoa já foi para outra página
+      view.style.opacity = '';
+      void view.offsetWidth;
+      view.classList.add('view-enter');
+    });
   }
   morphFrom = null;
   clickNav = false;
@@ -117,7 +140,7 @@ function render() {
   let r = adminRoute(route) ?? storeRoute(route) ?? notFound();
   if (typeof r === 'string') r = { html: r };
   view.innerHTML = r.html;
-  r.mount?.(view);
+  const mounted = r.mount?.(view);
   document.body.classList.toggle('is-admin', route.startsWith('painel') || route === 'sistema-opcional');
   const base = route.split('-')[0];
   nav.querySelectorAll('a').forEach((a) => a.classList.toggle('is-on', a.dataset.nav === route || (base === 'colecao' && a.dataset.nav === 'colecoes') || (base === 'categoria' && a.dataset.nav === 'loja')));
@@ -126,6 +149,7 @@ function render() {
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   if (render.started) view.focus({ preventScroll: true });
   render.started = true;
+  return mounted;
 }
 
 document.getElementById('bag-btn').onclick = () => openDrawer();

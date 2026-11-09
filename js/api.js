@@ -128,25 +128,34 @@ export const canSimulatePayment = !live;
 export function simulatePix(code) { if (!live) S.payPix(code); }
 
 // ---------- Painel ----------
+// Perfil da pessoa logada, guardado enquanto a sessão for a mesma: assim trocar de aba no painel
+// não espera uma consulta extra ao banco. As funções do banco continuam conferindo o acesso a cada chamada.
+let profileCache = null; // { userId, prof }
 export const admin = {
   async session() {
     if (!live) { try { return sessionStorage.getItem(DEMO_AUTH) === '1' ? { name: 'Lilian', role: 'dona' } : null; } catch { return window.__fjsAdmin ? { name: 'Lilian', role: 'dona' } : null; } }
     const c = await client();
     const { data } = await c.auth.getSession();
-    if (!data.session) return null;
-    return rpc('my_staff_profile');
+    if (!data.session) { profileCache = null; return null; }
+    const userId = data.session.user.id;
+    if (profileCache?.userId === userId) return profileCache.prof;
+    const prof = await rpc('my_staff_profile');
+    profileCache = prof ? { userId, prof } : null;
+    return prof;
   },
   async signIn(email, password) {
     if (!live) { try { sessionStorage.setItem(DEMO_AUTH, '1'); } catch { window.__fjsAdmin = true; } return { name: 'Lilian', role: 'dona' }; }
     const c = await client();
     const { error } = await c.auth.signInWithPassword({ email, password });
     if (error) throw friendly(error);
+    profileCache = null;
     const prof = await rpc('my_staff_profile');
     if (!prof) { await c.auth.signOut(); throw new Error('Esta conta não tem acesso ao painel da loja.'); }
     return prof;
   },
   async signOut() {
     if (!live) { try { sessionStorage.removeItem(DEMO_AUTH); } catch { window.__fjsAdmin = false; } return; }
+    profileCache = null;
     await (await client()).auth.signOut();
   },
   async orders({ status = '', q = '' } = {}) {
