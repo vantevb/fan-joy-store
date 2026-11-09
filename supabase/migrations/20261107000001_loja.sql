@@ -63,6 +63,8 @@ create table public.products (
   updated_at timestamptz not null default now(),
   constraint price_required check (mode in ('gratis', 'orcamento') or price is not null)
 );
+create index products_category_idx on public.products (category_id);
+create index products_collection_idx on public.products (collection_id);
 
 create table public.staff (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -130,6 +132,7 @@ create table public.stock_movements (
   by_user uuid
 );
 create index stock_movements_product_idx on public.stock_movements (product_id);
+create index stock_movements_order_idx on public.stock_movements (order_id);
 
 create table public.requests (
   id uuid primary key default gen_random_uuid(),
@@ -196,7 +199,7 @@ language sql stable set search_path = public, pg_temp as $$
 $$;
 
 create or replace function public.touch_updated_at() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public, pg_temp as $$
 begin new.updated_at = now(); return new; end $$;
 create trigger products_touch before update on public.products
   for each row execute function public.touch_updated_at();
