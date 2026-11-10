@@ -99,7 +99,8 @@ fan-joy-store/
   img/                artes da Lilian e logo em WebP
   instagram/          base de posts do Instagram (fontes Gloock e Figtree, licença OFL; html-to-image 1.11.11, licença MIT)
   supabase/           migração do banco, catálogo inicial (seed) e testes do banco
-  tools/              gerador do seed e scripts de teste
+  tools/              gerador do seed, scripts de teste e publicar.sh (monta a pasta dist/ que vai para o ar)
+  _headers            cabeçalhos de segurança usados pela Cloudflare Pages
   tests/              testes de ponta a ponta (demonstração e loja real)
   docs/               back-end, guia de uso, escopo e checklist de abertura
 ```
