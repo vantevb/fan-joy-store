@@ -63,6 +63,7 @@ Com o servidor rodando, abra http://localhost:8080/instagram/ para montar posts 
 - Dá para trocar a foto e escolher entre preencher a moldura ou mostrar a foto inteira.
 - **Baixar imagem** gera um PNG de 1080 × 1350 (formato retrato 4:5, o que mais aparece no feed).
 - Para abrir já com um produto: `instagram/?produto=caneca-gostoso`.
+- Versão editável no PowerPoint, Google Slides ou Canva: `instagram/modelo-editavel/` (o .pptx, as fontes da marca e o passo a passo em “COMO USAR.txt”).
 
 ## Testes
 

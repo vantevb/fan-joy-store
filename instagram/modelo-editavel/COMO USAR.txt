@@ -1,0 +1,28 @@
+FAN JOY STORE · POSTS DO INSTAGRAM (arquivo editável)
+
+O arquivo "Fan Joy - Posts Instagram.pptx" tem 5 posts no tamanho do feed (1080 x 1350):
+4 produtos de exemplo e 1 modelo em branco ("Nome do produto").
+
+1) INSTALE AS FONTES (só uma vez, no computador)
+   Abra a pasta "Fontes", dê dois cliques em cada arquivo .ttf e clique em "Instalar".
+   Sem isso o PowerPoint troca o nome da loja e os títulos por outra fonte.
+   No Google Slides e no Canva não precisa: as fontes Gloock e Figtree já existem lá.
+
+2) ABRA O ARQUIVO
+   - PowerPoint: abra o .pptx direto.
+   - Google Slides: Arquivo > Importar slides (ou suba o .pptx no Google Drive e abra com Google Slides).
+   - Canva: Criar design > Importar arquivo > escolha o .pptx.
+
+3) PARA FAZER UM POST NOVO
+   Duplique o slide do modelo em branco (botão direito no slide > Duplicar slide).
+   - Texto: clique e digite por cima. Nome, preço, Pix, selo e detalhes são caixas separadas.
+   - Foto: botão direito na foto > Alterar imagem (PowerPoint) / Substituir imagem (Google Slides).
+     Fotos quadradas, com o produto no centro, ficam melhores.
+   - O cabeçalho, a moldura e a logo do rodapé ficam presos ao fundo para não sair do lugar sem querer.
+     Para mexer neles: Exibir > Slide mestre (PowerPoint) ou Slide > Editar tema (Google Slides).
+   - Preço no Pix: o site dá 5% de desconto. Conta: valor x 0,95.
+
+4) SALVE COMO IMAGEM PARA POSTAR
+   - PowerPoint: Arquivo > Exportar > PNG > "Apenas este slide".
+   - Google Slides: Arquivo > Fazer download > Imagem PNG.
+   - Canva: Compartilhar > Baixar > PNG.
