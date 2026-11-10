@@ -46,7 +46,7 @@ function footer() {
       <div><h2 class="footer-h">Pagamento</h2><p class="pay-chips"><span>Pix</span><span>Visa</span><span>Mastercard</span><span>Elo</span></p><h2 class="footer-h">Gestão</h2><a href="#painel">Painel da Lilian</a><a href="#sistema-opcional">Sistema opcional</a></div>
     </div>
     <div class="wrap footer-base">
-      <p>Apresentação demonstrativa. A coleção BoatOat FM Brasil 2026 é conceitual e não tem vínculo oficial com os artistas, a produtora ou o evento.</p>
+      <p>${api.live ? '' : 'Apresentação demonstrativa. '}A coleção BoatOat FM Brasil 2026 é conceitual e não tem vínculo oficial com os artistas, a produtora ou o evento.</p>
       <p>Criação e desenvolvimento: <strong>VB Studio — Victoria Bellisario</strong></p>
     </div>
   </footer>`;
