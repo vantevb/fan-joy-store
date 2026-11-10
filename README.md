@@ -55,6 +55,15 @@ Depois abra http://localhost:8080.
 
 Os dados da demonstração (sacola, pedidos, ajustes do painel) ficam no `localStorage` do navegador. O botão “Restaurar dados de exemplo”, no painel, volta tudo ao estado inicial.
 
+## Posts do Instagram
+
+Com o servidor rodando, abra http://localhost:8080/instagram/ para montar posts do feed no padrão da loja: fundo branco, nome da loja no topo, foto do produto numa moldura à esquerda, descrição e **preço** à direita (com o valor no Pix) e a logo clarinha no rodapé.
+
+- Escolha um produto do catálogo ou “Produto novo” e ajuste os textos só para aquele post.
+- Dá para trocar a foto e escolher entre preencher a moldura ou mostrar a foto inteira.
+- **Baixar imagem** gera um PNG de 1080 × 1350 (formato retrato 4:5, o que mais aparece no feed).
+- Para abrir já com um produto: `instagram/?produto=caneca-gostoso`.
+
 ## Testes
 
 ```bash
@@ -87,6 +96,7 @@ fan-joy-store/
   js/admin.js         painel de gestão e sistema opcional
   js/app.js           rotas, cabeçalho, sacola e rodapé
   img/                artes da Lilian e logo em WebP
+  instagram/          base de posts do Instagram (fontes Gloock e Figtree, licença OFL; html-to-image 1.11.11, licença MIT)
   supabase/           migração do banco, catálogo inicial (seed) e testes do banco
   tools/              gerador do seed e scripts de teste
   tests/              testes de ponta a ponta (demonstração e loja real)
