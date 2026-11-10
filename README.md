@@ -55,6 +55,15 @@ Depois abra http://localhost:8080.
 
 Os dados da demonstração (sacola, pedidos, ajustes do painel) ficam no `localStorage` do navegador. O botão “Restaurar dados de exemplo”, no painel, volta tudo ao estado inicial.
 
+## Versão em inglês
+
+A loja tem português e inglês, com o botão **PT | EN** no cabeçalho. Na primeira visita, quem usa o navegador em outro idioma vê a loja em inglês; um link com `?lang=en` também abre em inglês. Os preços continuam em reais e a entrega é só no Brasil.
+
+- Os textos da interface ficam nas próprias páginas, nos dois idiomas (`tr('português', 'English')`, de `js/i18n.js`).
+- Os textos em inglês dos produtos ficam em `en` no catálogo (`js/data.js`) e na coluna `i18n` do banco. As opções das variações em inglês são só de exibição: o pedido envia os rótulos em português.
+- Ao cadastrar um produto pelo painel, a Lilian pode preencher nome e descrição em inglês. O que ficar vazio aparece em português.
+- O painel de gestão fica sempre em português.
+
 ## Posts do Instagram
 
 Com o servidor rodando, abra http://localhost:8080/instagram/ para montar posts do feed no padrão da loja: fundo branco, nome da loja no topo, foto do produto numa moldura à esquerda, descrição e **preço** à direita (com o valor no Pix) e a logo clarinha no rodapé.
@@ -88,6 +97,7 @@ fan-joy-store/
   index.html          página única
   css/styles.css      identidade visual e layout
   js/config.js        conexão com o Supabase (vazio = demonstração)
+  js/i18n.js          idioma da loja (português ou inglês) e o botão PT | EN
   js/api.js           camada de dados: demonstração ou banco real
   js/vendor/          cliente oficial do Supabase (supabase-js 2.45.4, licença MIT)
   js/data.js          catálogo, coleções, categorias, status e perguntas frequentes

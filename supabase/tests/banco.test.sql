@@ -38,6 +38,8 @@ select tests.fails('update public.products set price = 1', 'permission denied', 
 select tests.fails('select public.admin_orders()', 'permission denied', 'anon não executa funções do painel');
 select tests.ok(jsonb_array_length(public.catalog()->'products') = 21, 'catálogo público tem os 21 produtos');
 select tests.ok(not (public.catalog()->'products'->0 ? 'weightG'), 'catálogo não expõe peso e medidas');
+select tests.ok((select p->'en'->>'name' from jsonb_array_elements(public.catalog()->'products') p where p->>'id' = 'caneca-gostoso') = '“Gostoso!” Mug', 'catálogo traz os textos em inglês');
+select tests.ok((select jsonb_array_length(p->'en'->'variations'->0->'options') = jsonb_array_length(p->'variations'->0->'options') from jsonb_array_elements(public.catalog()->'products') p where p->>'id' = 'caneca-ta-bom'), 'opções em inglês casam com as em português');
 
 -- Pedido válido: 2 canecas Mágica com nome + 1 dupla de bottons 58 mm, Pix, SEDEX para BH
 select set_config('t.o1', (public.place_order(
@@ -101,6 +103,9 @@ select tests.ok(jsonb_array_length(public.admin_orders()->0->'history') >= 1, 'h
 select tests.ok((public.admin_update_product('bottons-dupla', '{"stock":2,"price":19.9}')->>'stock')::int = 2, 'ajusta estoque e preço');
 select tests.fails($$select public.admin_update_product('bottons-dupla', '{"stock":-1}')$$, 'check', 'estoque não fica negativo');
 select tests.ok((select count(*) from jsonb_array_elements(public.admin_products()) p where p->>'id' = 'bottons-dupla' and (p->>'price')::numeric = 19.9) = 1, 'preço novo salvo');
+select tests.ok(public.admin_update_product('bottons-dupla', '{"en":{"name":"Button pair"}}')->'en'->>'name' = 'Button pair', 'painel grava o nome em inglês');
+select tests.ok((select p->'en'->>'name' from jsonb_array_elements(public.admin_products()) p where p->>'id' = 'bottons-dupla') = 'Button pair' and (select p->>'name' from jsonb_array_elements(public.admin_products()) p where p->>'id' = 'bottons-dupla') like 'Dupla de bottons%', 'tradução não mexe no nome em português');
+select tests.fails($$select public.admin_update_product('bottons-dupla', '{"en":"texto solto"}')$$, 'traducao_invalida', 'tradução precisa ser um objeto');
 select tests.ok(public.admin_create_product('{"name":"Caneca do Oat Te Amo","category":"canecas","collection":"boatoat","price":42.9,"stock":5}')->>'id' like 'caneca-do-oat-te-amo-%', 'cadastra produto novo');
 
 select set_config('t.dash', public.admin_dashboard(30, '', '')::text, false);

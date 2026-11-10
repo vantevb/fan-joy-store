@@ -108,6 +108,25 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .main-nav a:hover { background: var(--tint); }
 .main-nav a.is-on { background: var(--navy); color: var(--white); }
 .header-actions { display: flex; align-items: center; gap: 2px; }
+.chrome { display: contents; }
+/* Troca de idioma: PT | EN */
+.lang-switch { display: inline-flex; margin-right: 6px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; }
+.lang-switch button { min-width: 36px; min-height: 30px; padding: 0 8px; border: 0; border-radius: 999px; background: transparent; color: var(--navy); font: 700 0.75rem/1 var(--body); letter-spacing: 0.06em; cursor: pointer; }
+.lang-switch button:hover { background: var(--tint); }
+.lang-switch button[aria-pressed="true"] { background: var(--navy); color: var(--white); }
+body.is-admin .lang-switch { display: none; }
+/* Celular: mostra só o idioma para o qual trocar, e encolhe a marca nas telas mais estreitas */
+@media (max-width: 520px) {
+  .lang-switch { margin-right: 2px; padding: 2px; }
+  .lang-switch button[aria-pressed="true"] { display: none; }
+  .lang-switch button { min-width: 34px; }
+}
+@media (max-width: 360px) {
+  .brand { gap: 6px; }
+  .brand img { width: 40px; height: 40px; }
+  .brand-name { font-size: 1.3rem; }
+  .header-actions .icon-btn { width: 40px; }
+}
 .bag-count { position: absolute; top: 2px; right: 0; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--red); color: var(--white); font-size: 0.72rem; font-weight: 700; display: grid; place-items: center; }
 .bag-count.is-empty { background: var(--line); color: var(--navy); }
 .menu-btn { display: none; }

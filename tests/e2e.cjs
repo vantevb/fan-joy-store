@@ -13,7 +13,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
 
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'pt-BR' });
   const page = await ctx.newPage();
   page.setDefaultTimeout(8000);
   const errors = [];
@@ -74,7 +74,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     expect((await page.locator('#view [data-testid="cart-line"]', { hasText: 'bottons' }).locator('[data-testid="line-qty"]').textContent()) === '2', 'qtd bottons = 2');
     await page.locator('#view [data-testid="cart-line"]', { hasText: 'bottons' }).locator('[data-act="rm"]').click();
     expect(await page.locator('#view [data-testid="cart-line"]').count() === 1, 'removeu bottons');
-    expect((await page.textContent('[data-testid="bag-total"]')).includes('109,80'), 'subtotal 2 × 54,90');
+    expect((await page.textContent('[data-testid="bag-total"]')).includes('140,00'), 'subtotal 2 × 70,00');
   });
 
   await step('frete por CEP e checkout com Pix', async () => {
@@ -217,7 +217,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   await step('sem erros de JavaScript', async () => { expect(errors.length === 0, errors.join(' | ')); });
 
   console.log('Celular');
-  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR' });
   const m = await mobile.newPage();
   m.setDefaultTimeout(8000);
   for (const route of ['inicio', 'loja', 'p-caneca-gostoso', 'colecao-boatoat', 'sacola', 'brindes', 'painel']) {
@@ -232,6 +232,41 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     await m.goto(`${BASE}/#inicio`);
     await m.click('#menu-btn');
     expect(await m.isVisible('#main-nav a[href="#loja"]'), 'menu visível');
+  });
+
+  console.log('Inglês');
+  const en = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'en-US' });
+  const e = await en.newPage();
+  e.setDefaultTimeout(8000);
+  await step('navegador em inglês abre a loja em inglês', async () => {
+    await e.goto(`${BASE}/#loja`);
+    expect((await e.textContent('#view h1')).includes('Find your favorite'), 'título em inglês');
+    expect((await e.getAttribute('html', 'lang')) === 'en', 'lang="en"');
+  });
+  await step('produto em inglês: nome, opções e preço', async () => {
+    await e.goto(`${BASE}/#p-caneca-gostoso`);
+    await e.waitForSelector('#add');
+    expect((await e.textContent('#view h1')).includes('Mug'), 'nome em inglês');
+    await e.locator('label.opt', { hasText: 'Magic' }).click();
+    expect((await e.textContent('#price')).includes('R$70.00'), 'preço da opção em inglês');
+  });
+  await step('sacola guarda a opção em português e mostra em inglês', async () => {
+    await e.click('#add');
+    await e.waitForSelector('#drawer:not([hidden])');
+    expect((await e.textContent('.line-opts')).includes('Magic'), 'opção exibida em inglês');
+    const saved = await e.evaluate(() => JSON.parse(localStorage.getItem('fjs:v1:cart'))[0].options);
+    expect(Object.values(saved)[0].startsWith('Mágica'), 'valor salvo em português');
+  });
+  await step('botão PT troca para português na mesma página', async () => {
+    await e.goto(`${BASE}/#loja`);
+    await e.click('.lang-switch [data-lang="pt"]');
+    expect((await e.textContent('#view h1')).includes('Encontre o seu favorito'), 'título em português');
+  });
+  await step('painel continua em português com a loja em inglês', async () => {
+    await e.click('.lang-switch [data-lang="en"]');
+    await e.goto(`${BASE}/#painel`);
+    await e.waitForTimeout(300);
+    expect((await e.textContent('#view h1')).includes('Área da Lilian'), 'painel em português');
   });
 
   await browser.close();

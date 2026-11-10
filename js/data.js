@@ -9,16 +9,16 @@ export const BRAND = {
 };
 
 export const CATEGORIES = [
-  { id: 'canecas', name: 'Canecas' },
-  { id: 'camisetas', name: 'Camisetas' },
-  { id: 'bottons', name: 'Bottons' },
-  { id: 'photocards', name: 'Photocards' },
-  { id: 'banners', name: 'Banners' },
-  { id: 'papelaria', name: 'Papelaria' },
-  { id: 'acessorios', name: 'Acessórios' },
-  { id: 'presentes', name: 'Presentes' },
-  { id: 'freebies', name: 'Freebies' },
-  { id: 'brindes', name: 'Brindes corporativos' },
+  { id: 'canecas', name: 'Canecas', en: { name: 'Mugs' } },
+  { id: 'camisetas', name: 'Camisetas', en: { name: 'T-shirts' } },
+  { id: 'bottons', name: 'Bottons', en: { name: 'Pins' } },
+  { id: 'photocards', name: 'Photocards', en: { name: 'Photocards' } },
+  { id: 'banners', name: 'Banners', en: { name: 'Banners' } },
+  { id: 'papelaria', name: 'Papelaria', en: { name: 'Stationery' } },
+  { id: 'acessorios', name: 'Acessórios', en: { name: 'Accessories' } },
+  { id: 'presentes', name: 'Presentes', en: { name: 'Gifts' } },
+  { id: 'freebies', name: 'Freebies', en: { name: 'Freebies' } },
+  { id: 'brindes', name: 'Brindes corporativos', en: { name: 'Corporate gifts' } },
 ];
 
 export const COLLECTIONS = [
@@ -30,6 +30,7 @@ export const COLLECTIONS = [
     summary: 'Coleção conceitual criada a partir de duas artes da Lilian, com os bordões “Tá bom!” e “Gostoso!”.',
     image: 'img/arte-ta-bom.webp',
     tone: 'cream',
+    en: { name: 'BoatOat FM Brasil 2026', tagline: 'Our little inside joke.', summary: 'A concept collection born from two of Lilian’s drawings, with the catchphrases “Tá bom!” and “Gostoso!”.' },
   },
   {
     id: 'dorama-club',
@@ -37,6 +38,7 @@ export const COLLECTIONS = [
     tagline: 'Só mais um episódio.',
     summary: 'Para quem maratona doramas com chá, lencinho e caderno de frases favoritas.',
     tone: 'red',
+    en: { name: 'Dorama Club', tagline: 'Just one more episode.', summary: 'For K-drama marathons with tea, tissues and a notebook full of favorite lines.' },
   },
   {
     id: 'sweet-memories',
@@ -44,6 +46,7 @@ export const COLLECTIONS = [
     tagline: 'Para guardar o que faz sentir.',
     summary: 'Papelaria e acessórios para colecionar photocards, ingressos e lembranças de K-pop e BTS.',
     tone: 'lilac',
+    en: { name: 'Sweet Memories', tagline: 'For keeping what makes you feel.', summary: 'Stationery and accessories for collecting photocards, tickets and K-pop and BTS memories.' },
   },
   {
     id: 'bl-diaries',
@@ -51,6 +54,7 @@ export const COLLECTIONS = [
     tagline: 'Toda história merece um final feliz.',
     summary: 'Pequenos objetos para quem acompanha séries BL e coleciona casais favoritos.',
     tone: 'yellow',
+    en: { name: 'BL Diaries', tagline: 'Every story deserves a happy ending.', summary: 'Little things for BL series lovers who collect their favorite couples.' },
   },
   {
     id: 'essenciais',
@@ -58,16 +62,19 @@ export const COLLECTIONS = [
     tagline: 'A florzinha que acompanha você.',
     summary: 'Itens com a identidade da loja, presentes prontos e materiais gratuitos.',
     tone: 'navy',
+    en: { name: 'Fan Joy Essentials', tagline: 'The little flower that goes everywhere with you.', summary: 'Items with the store’s own look, ready-made gifts and free goodies.' },
   },
 ];
 
 const BOAT_NOTE = 'Arte original da Lilian. Coleção conceitual, sem vínculo oficial com os artistas, a produtora ou o evento.';
+const BOAT_NOTE_EN = 'Original art by Lilian. Concept collection with no official connection to the artists, the producer or the event.';
 
 // createdDaysAgo: idade do produto no catálogo. Produtos com menos de 30 dias são tratados como "novos" nos relatórios.
 // mode: 'pronta' (pronta entrega, usa estoque) | 'encomenda' (produzido após o pedido) | 'orcamento' (sob orçamento)
 export const PRODUCTS = [
   {
     id: 'caneca-ta-bom', name: 'Caneca “Tá bom!”', category: 'canecas', collection: 'boatoat',
+    en: { name: '“Tá bom!” Mug', short: 'The answer to everything, now with your coffee.', description: 'At the fan meeting, Boat answered “Tá bom!” (“Okay!”) to almost everything. Lilian turned that memory into a wraparound print that goes all the way around the mug.', details: ['White ceramic, 325 ml', 'Sublimation print that covers the whole mug', 'Microwave safe; hand washing keeps the art looking new longer', BOAT_NOTE_EN], variations: [{ name: 'Model', options: ['White', 'Colored (colored handle and inside)', 'Magic (reveals the art when hot)'] }], personalization: { label: 'Name on the handle', placeholder: 'E.g.: Lilian' }, alts: ['Mockup of three white mugs with Lilian’s “Tá bom!” art: left side, middle and right side, with the full print strip below'] },
     price: 50, stock: 14, lowStock: 5, mode: 'pronta', productionDays: 2, createdDaysAgo: 120, featured: true,
     images: [
       { src: 'img/arte-ta-bom.webp', alt: 'Mockup de três canecas brancas com a arte “Tá bom!” da Lilian: lado esquerdo, meio e lado direito, e a faixa completa da estampa abaixo', fit: 'contain' },
@@ -80,6 +87,7 @@ export const PRODUCTS = [
   },
   {
     id: 'caneca-gostoso', name: 'Caneca “Gostoso!”', category: 'canecas', collection: 'boatoat',
+    en: { name: '“Gostoso!” Mug', short: 'For anyone who got called cute and had the perfect comeback.', description: 'Whenever fans called Oat cute, he corrected them: “gostoso!” (think “hot stuff!”). Lilian’s art keeps that moment alive with hearts and lots of laughs.', details: ['White ceramic, 325 ml', 'Sublimation print', 'Microwave safe', BOAT_NOTE_EN], variations: [{ name: 'Model', options: ['White', 'Colored (colored handle and inside)', 'Magic (reveals the art when hot)'] }], personalization: { label: 'Name on the handle', placeholder: 'E.g.: Mari' }, alts: ['White mug with Lilian’s “Gostoso!” art, showing six characters making heart hands'] },
     price: 50, stock: 3, lowStock: 5, mode: 'pronta', productionDays: 2, createdDaysAgo: 120, featured: true,
     images: [{ src: 'img/caneca-gostoso.webp', alt: 'Caneca branca com a arte “Gostoso!” da Lilian, com seis personagens fazendo coração com as mãos', fit: 'cover' }],
     short: 'Para quem foi chamado de fofo e respondeu à altura.',
@@ -90,6 +98,7 @@ export const PRODUCTS = [
   },
   {
     id: 'bottons-dupla', name: 'Dupla de bottons “Tá bom!” + “Gostoso!”', category: 'bottons', collection: 'boatoat',
+    en: { name: '“Tá bom!” + “Gostoso!” Pin Set', short: 'Both catchphrases, side by side, on your tote bag.', description: 'One pin for each catchphrase. Perfect on a backpack, tote bag or concert jacket.', details: ['2 pins with safety clasp', 'Glossy finish', BOAT_NOTE_EN], variations: [{ name: 'Size', options: ['38 mm', '58 mm'] }], alts: ['Two round pins: one with the character saying “Tá bom!” and the other saying “Gostoso!”'] },
     price: 18.9, stock: 40, lowStock: 10, mode: 'pronta', productionDays: 1, createdDaysAgo: 120, featured: true,
     images: [{ src: 'img/bottons-dupla.webp', alt: 'Dois bottons redondos: um com o personagem dizendo “Tá bom!” e outro dizendo “Gostoso!”', fit: 'cover' }],
     short: 'Os dois bordões, lado a lado, na sua ecobag.',
@@ -99,6 +108,7 @@ export const PRODUCTS = [
   },
   {
     id: 'photocards', name: 'Kit de photocards “Virou coisa nossa”', category: 'photocards', collection: 'boatoat',
+    en: { name: '“Our Little Inside Joke” Photocard Set', short: 'Six illustrated cards to trade, keep and collect.', description: 'Three “Tá bom!” cards and three “Gostoso!” cards in standard photocard size. Made to order so you get the finish you picked.', details: ['6 cards, 5.5 × 8.5 cm', '300 g paper with rounded corners', 'Fan Joy little flower on the back', BOAT_NOTE_EN], variations: [{ name: 'Finish', options: ['Matte', 'Holographic'] }], alts: ['Six photocards illustrated by Lilian: three with “Tá bom!” and three with “Gostoso!”'] },
     price: 24.9, stock: 0, lowStock: 0, mode: 'encomenda', productionDays: 7, createdDaysAgo: 120, featured: true,
     images: [{ src: 'img/photocards.webp', alt: 'Seis photocards ilustrados pela Lilian: três com “Tá bom!” e três com “Gostoso!”', fit: 'cover' }],
     short: 'Seis cards ilustrados para trocar, guardar e colecionar.',
@@ -108,6 +118,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ecobag-boatoat', name: 'Ecobag “Virou coisa nossa”', category: 'acessorios', collection: 'boatoat',
+    en: { name: '“Our Little Inside Joke” Tote Bag', short: 'Both artworks together, so you can carry the fan meeting on your shoulder.', description: 'Natural cotton tote bag with both artworks from the collection. Fits a notebook, a water bottle and all your photocards.', details: ['100% natural cotton, 38 × 42 cm', '60 cm handles', 'Wash inside out in cold water', BOAT_NOTE_EN], personalization: { label: 'Phrase on the back', placeholder: 'E.g.: Virou coisa nossa' }, alts: ['Natural cotton tote bag with Lilian’s two artworks: “Tá bom!” and “Gostoso!”'] },
     price: 59.9, stock: 8, lowStock: 4, mode: 'pronta', productionDays: 3, createdDaysAgo: 120, featured: true,
     images: [{ src: 'img/ecobag.webp', alt: 'Ecobag de algodão cru com as duas artes da Lilian: “Tá bom!” e “Gostoso!”', fit: 'cover' }],
     short: 'As duas artes juntas, para levar o fanmeeting no ombro.',
@@ -118,6 +129,7 @@ export const PRODUCTS = [
   },
   {
     id: 'adesivos-boatoat', name: 'Cartela de adesivos “Piadas do fandom”', category: 'papelaria', collection: 'boatoat',
+    en: { name: '“Fandom Jokes” Sticker Sheet', short: 'Six stickers for your notebook, laptop and phone case.', description: 'Kiss-cut sticker sheet. The fan meeting catchphrases, ready to stick wherever you like.', details: ['A6 sheet with 6 stickers', 'Water-resistant matte vinyl', BOAT_NOTE_EN], alts: ['Sheet with six kiss-cut stickers: three “Tá bom!” and three “Gostoso!”'] },
     price: 14.9, stock: 25, lowStock: 8, mode: 'pronta', productionDays: 1, createdDaysAgo: 120, featured: true,
     images: [{ src: 'img/adesivos.webp', alt: 'Cartela com seis adesivos recortados: três “Tá bom!” e três “Gostoso!”', fit: 'cover' }],
     short: 'Seis adesivos para o caderno, o notebook e a capinha.',
@@ -127,6 +139,7 @@ export const PRODUCTS = [
   },
   {
     id: 'banner-oat', name: 'Banner do Oat “Gostoso!”', category: 'banners', collection: 'boatoat',
+    en: { name: 'Oat “Gostoso!” Banner', short: 'The full panoramic art, ready to hold up at the concert.', description: 'Panoramic banner with the “Gostoso!” art. It replaced the old print and is the newest item in the collection.', details: ['Matte canvas with rod and cord', 'Light enough to hold with one hand', BOAT_NOTE_EN], variations: [{ name: 'Size', options: ['60 × 26 cm', '90 × 38 cm'] }], alts: ['Lilian’s panoramic art with six versions of Oat saying “Gostoso!” among hearts'] },
     price: 29.9, stock: 6, lowStock: 3, mode: 'pronta', productionDays: 2, createdDaysAgo: 12, featured: true,
     images: [{ src: 'img/arte-gostoso.webp', alt: 'Arte panorâmica da Lilian com seis versões do Oat dizendo “Gostoso!” entre corações', fit: 'contain' }],
     short: 'A arte panorâmica inteira, pronta para levantar no show.',
@@ -137,6 +150,7 @@ export const PRODUCTS = [
 
   {
     id: 'banner-boat', name: 'Banner do Boat “Tá bom!”', category: 'banners', collection: 'boatoat',
+    en: { name: 'Boat “Tá bom!” Banner', short: 'Boat’s favorite phrase in big letters, for the concert.', description: 'Panoramic banner with six versions of Boat and “Tá bom” front and center. It pairs with the Oat “Gostoso!” banner.', details: ['Matte canvas with rod and cord', 'Light enough to hold with one hand', BOAT_NOTE_EN], variations: [{ name: 'Size', options: ['60 × 27 cm', '90 × 40 cm'] }], alts: ['Lilian’s panoramic banner with six versions of Boat holding a microphone, “Tá bom” speech bubbles and the sign “Boat’s favorite phrase: Tá bom”'] },
     price: 29.9, stock: 6, lowStock: 3, mode: 'pronta', productionDays: 2, createdDaysAgo: 3, featured: true,
     images: [{ src: 'img/banner-boat.webp', alt: 'Banner panorâmico da Lilian com seis versões do Boat segurando microfone, balões “Tá bom” e o letreiro “A frase favorita do Boat: Tá bom”', fit: 'contain' }],
     short: 'A frase favorita do Boat em letras grandes, para o show.',
@@ -148,6 +162,7 @@ export const PRODUCTS = [
   // Demais coleções: modelos demonstrativos desenhados pela VB Studio até a Lilian enviar as artes definitivas.
   {
     id: 'caneca-mais-um-episodio', name: 'Caneca “Só mais um episódio”', category: 'canecas', collection: 'dorama-club',
+    en: { name: '“Just One More Episode” Mug', short: 'For the marathon that started at 10 p.m. and ended at 4 a.m.', description: 'A mug to keep you company with tea during K-drama marathons.', details: ['White ceramic, 325 ml', 'Sample art: it will be replaced by Lilian’s art'], variations: [{ name: 'Model', options: ['White', 'Colored (red handle and inside)', 'Magic (reveals the art when hot)'] }], personalization: { label: 'Name', placeholder: 'E.g.: Ana' }, artText: 'just one more\nepisode' },
     price: 50, stock: 11, lowStock: 4, mode: 'pronta', productionDays: 2, createdDaysAgo: 95,
     art: { kind: 'mug', text: 'só mais um\nepisódio', bg: 'red' },
     short: 'Para a maratona que começou às 22h e terminou às 4h.',
@@ -158,6 +173,7 @@ export const PRODUCTS = [
   },
   {
     id: 'caderno-diario-dorama', name: 'Caderno “Diário de dorama” A5', category: 'papelaria', collection: 'dorama-club',
+    en: { name: '“K-drama Diary” A5 Notebook', short: 'Notes, favorite lines and your watch list.', description: 'A notebook with pages to log the K-dramas you’ve watched, your notes and the lines you can’t forget.', details: ['A5, 80 dotted sheets', 'Laminated hardcover', 'Sample art'], personalization: { label: 'Name on the cover', placeholder: 'E.g.: Bia’s Diary' }, artText: 'k-drama\ndiary' },
     price: 36.9, stock: 9, lowStock: 4, mode: 'pronta', productionDays: 3, createdDaysAgo: 80,
     art: { kind: 'notebook', text: 'diário de\ndorama', bg: 'cream' },
     short: 'Notas, frases favoritas e a lista do que assistir.',
@@ -168,6 +184,7 @@ export const PRODUCTS = [
   },
   {
     id: 'marcadores-dorama', name: 'Kit de marcadores de página', category: 'papelaria', collection: 'dorama-club',
+    en: { name: 'Bookmark Set', short: 'Four bookmarks for your books and planner.', description: 'A set of four bookmarks illustrated with K-drama quotes.', details: ['4 bookmarks, 5 × 15 cm', '300 g paper with satin ribbon', 'Sample art'], artText: 'fighting!' },
     price: 12.9, stock: 30, lowStock: 8, mode: 'pronta', productionDays: 1, createdDaysAgo: 75,
     art: { kind: 'bookmarks', text: 'fighting!', bg: 'yellow' },
     short: 'Quatro marcadores para o livro e o planner.',
@@ -177,6 +194,7 @@ export const PRODUCTS = [
   },
   {
     id: 'porta-photocard', name: 'Porta-photocard Sweet Memories', category: 'acessorios', collection: 'sweet-memories',
+    en: { name: 'Sweet Memories Photocard Holder', short: 'Protects your favorite card and hangs from your bag.', description: 'Acrylic photocard holder with a chain, so your bias goes everywhere with you.', details: ['Clear acrylic, 6 × 9 cm', 'Chain with clasp', 'Sample art'], variations: [{ name: 'Chain color', options: ['Gold', 'Silver'] }], artText: 'sweet\nmemories' },
     price: 22.9, stock: 2, lowStock: 4, mode: 'pronta', productionDays: 2, createdDaysAgo: 100,
     art: { kind: 'holder', text: 'sweet\nmemories', bg: 'lilac' },
     short: 'Protege seu card favorito e vai pendurado na bolsa.',
@@ -186,6 +204,7 @@ export const PRODUCTS = [
   },
   {
     id: 'kit-toploader', name: 'Kit de toploaders decorados', category: 'photocards', collection: 'sweet-memories',
+    en: { name: 'Decorated Toploader Set', short: 'Three hand-decorated toploaders for your cards.', description: 'Toploaders decorated with stickers and glitter, put together one by one after you order.', details: ['3 toploaders, 35pt', 'Hand-decorated', 'Sample art'], variations: [{ name: 'Palette', options: ['Lilac', 'Blue and yellow'] }], personalization: { label: 'Your bias’s name', placeholder: 'E.g.: your bias’s name' }, artText: 'borahae\nmoments' },
     price: 29.9, stock: 0, lowStock: 0, mode: 'encomenda', productionDays: 6, createdDaysAgo: 18,
     art: { kind: 'cards', text: 'borahae\nmoments', bg: 'lilac' },
     short: 'Três toploaders decorados à mão para seus cards.',
@@ -196,6 +215,7 @@ export const PRODUCTS = [
   },
   {
     id: 'chaveiro-bl', name: 'Chaveiro acrílico “Final feliz”', category: 'acessorios', collection: 'bl-diaries',
+    en: { name: '“Happy Ending” Acrylic Keychain', short: 'For anyone who’s been rooting for the couple since episode one.', description: 'Acrylic keychain printed on both sides, made to order.', details: ['3 mm acrylic, 6 cm', 'Printed front and back', 'Sample art'], personalization: { label: 'Couple’s names', placeholder: 'E.g.: your couple’s names' }, artText: 'happy\nending' },
     price: 19.9, stock: 0, lowStock: 0, mode: 'encomenda', productionDays: 8, createdDaysAgo: 60,
     art: { kind: 'keychain', text: 'final\nfeliz', bg: 'yellow' },
     short: 'Para quem torce pelo casal desde o primeiro episódio.',
@@ -206,6 +226,7 @@ export const PRODUCTS = [
   },
   {
     id: 'planner-bl', name: 'Planner semanal BL Diaries', category: 'papelaria', collection: 'bl-diaries',
+    en: { name: 'BL Diaries Weekly Planner', short: 'New episodes every week? Write them down here.', description: 'Undated planner with space for premieres, marathons and weekly goals.', details: ['A5, 52 undated weeks', 'Gold spiral binding', 'Sample art'], artText: 'bl\ndiaries' },
     price: 39.9, stock: 7, lowStock: 3, mode: 'pronta', productionDays: 3, createdDaysAgo: 85,
     art: { kind: 'notebook', text: 'bl\ndiaries', bg: 'yellow' },
     short: 'Episódios novos toda semana? Anote aqui.',
@@ -215,6 +236,7 @@ export const PRODUCTS = [
   },
   {
     id: 'camiseta-little-joy', name: 'Camiseta Little Joy', category: 'camisetas', collection: 'essenciais',
+    en: { name: 'Little Joy T-shirt', short: 'The Fan Joy little flower, right on your chest.', description: 'Cotton T-shirt with the smiling Fan Joy Store little flower.', details: ['Combed cotton, 30/1', 'Unisex fit', 'Sample art'], variations: [{ name: 'Size', options: ['S', 'M', 'L', 'XL'] }, { name: 'Color', options: ['Off-white', 'Navy blue'] }], artText: 'little joy' },
     price: 79.9, stock: 12, lowStock: 4, mode: 'pronta', productionDays: 4, createdDaysAgo: 110,
     art: { kind: 'tee', text: 'little joy', bg: 'cream' },
     short: 'A florzinha da Fan Joy no peito.',
@@ -227,6 +249,7 @@ export const PRODUCTS = [
   },
   {
     id: 'fan-joy-box', name: 'Fan Joy Box', category: 'presentes', collection: 'essenciais',
+    en: { name: 'Fan Joy Box', short: 'Gift box with a mug, stickers, a bookmark and a card.', description: 'A ready-made gift for birthdays or Secret Santa. You pick the fandom and Lilian puts the box together.', details: ['Rigid box with a bow', 'Includes a mug, sticker sheet, bookmark and a handwritten card', 'Sample art'], variations: [{ name: 'Theme', options: ['K-drama', 'K-pop', 'BL'] }], personalization: { label: 'Card message', placeholder: 'E.g.: Happy birthday, Ju!' }, artText: 'fan joy\nbox' },
     price: 119.9, stock: 4, lowStock: 2, mode: 'pronta', productionDays: 3, createdDaysAgo: 70,
     art: { kind: 'box', text: 'fan joy\nbox', bg: 'navy' },
     short: 'Caixa presente com caneca, adesivos, marcador e cartão.',
@@ -237,6 +260,7 @@ export const PRODUCTS = [
   },
   {
     id: 'ecobag-everyday', name: 'Ecobag Everyday Fan', category: 'acessorios', collection: 'essenciais',
+    en: { name: 'Everyday Fan Tote Bag', short: 'Sold out. A new batch is being considered.', description: 'Tote bag with the Fan Joy little flower. It sold out and is unavailable until the next batch.', details: ['Natural cotton', 'Sample art'], artText: 'everyday\nfan' },
     price: 54.9, stock: 0, lowStock: 3, mode: 'pronta', productionDays: 3, createdDaysAgo: 140, active: false,
     art: { kind: 'bag', text: 'everyday\nfan', bg: 'cream' },
     short: 'Esgotada. Nova tiragem em avaliação.',
@@ -246,6 +270,7 @@ export const PRODUCTS = [
   },
   {
     id: 'wallpaper-fan-joy', name: 'Papel de parede Fan Joy', category: 'freebies', collection: 'essenciais',
+    en: { name: 'Fan Joy Wallpaper', short: 'Free for your phone, in two versions.', description: 'Phone wallpaper with the Fan Joy little flower. A gift from Lilian to the community.', details: ['1170 × 2532 px', 'Personal use only, not for commercial use'], artText: 'fan joy' },
     price: 0, stock: 0, lowStock: 0, mode: 'gratis', productionDays: 0, createdDaysAgo: 40,
     art: { kind: 'phone', text: 'fan joy', bg: 'red' },
     short: 'Grátis para celular, em duas versões.',
@@ -255,6 +280,7 @@ export const PRODUCTS = [
   },
   {
     id: 'kit-lettering', name: 'Folhas de lettering para imprimir', category: 'freebies', collection: 'dorama-club',
+    en: { name: 'Printable Lettering Sheets', short: 'Practice lettering with K-drama quotes.', description: 'Free PDF with K-drama quotes to practice lettering at home.', details: ['A4 PDF, 4 pages', 'Personal use'], artText: 'saranghae' },
     price: 0, stock: 0, lowStock: 0, mode: 'gratis', productionDays: 0, createdDaysAgo: 22,
     art: { kind: 'notebook', text: 'saranghae', bg: 'cream' },
     short: 'Pratique lettering com frases de dorama.',
@@ -264,6 +290,7 @@ export const PRODUCTS = [
   },
   {
     id: 'brinde-equipe', name: 'Kit brinde corporativo', category: 'brindes', collection: 'essenciais',
+    en: { name: 'Corporate Gift Kit', short: 'Mugs, notebooks and tote bags with your brand, from 20 units.', description: 'Kits for events, onboarding and special dates, with art created by Lilian based on your company’s brand identity.', details: ['From 20 units', 'Exclusive art, approved before production', 'Invoice (nota fiscal) and bulk delivery'], artText: 'your\nbrand' },
     price: null, stock: 0, lowStock: 0, mode: 'orcamento', productionDays: 15, createdDaysAgo: 90,
     art: { kind: 'box', text: 'sua\nmarca', bg: 'navy' },
     short: 'Canecas, cadernos e ecobags com a sua marca, a partir de 20 unidades.',
@@ -274,19 +301,20 @@ export const PRODUCTS = [
 ];
 
 export const STATUS = [
-  { id: 'aguardando', label: 'Aguardando pagamento' },
-  { id: 'pago', label: 'Pagamento aprovado' },
-  { id: 'producao', label: 'Em produção' },
-  { id: 'enviado', label: 'Enviado' },
-  { id: 'entregue', label: 'Entregue' },
-  { id: 'cancelado', label: 'Cancelado' },
+  { id: 'aguardando', label: 'Aguardando pagamento', en: { label: 'Awaiting payment' } },
+  { id: 'pago', label: 'Pagamento aprovado', en: { label: 'Payment approved' } },
+  { id: 'producao', label: 'Em produção', en: { label: 'In production' } },
+  { id: 'enviado', label: 'Enviado', en: { label: 'Shipped' } },
+  { id: 'entregue', label: 'Entregue', en: { label: 'Delivered' } },
+  { id: 'cancelado', label: 'Cancelado', en: { label: 'Cancelled' } },
 ];
 
 export const FAQ = [
-  { q: 'Já posso comprar?', a: 'Ainda não. Este site é uma apresentação: você pode navegar, montar a sacola e simular um pedido, mas nenhum pagamento é cobrado. As vendas começam depois da aprovação do catálogo, dos preços e das integrações de pagamento e frete.' },
-  { q: 'O que é “pronta entrega” e “sob encomenda”?', a: 'Itens de pronta entrega já estão no estoque e saem no prazo de separação indicado. Itens sob encomenda são produzidos depois da confirmação do pagamento, e o prazo de produção aparece na página de cada produto.' },
-  { q: 'Posso personalizar um produto?', a: 'Sim, nos produtos que mostram o campo de personalização. Para ideias maiores, como uma arte nova, use a página de encomendas personalizadas.' },
-  { q: 'Como funciona a entrega?', a: 'Enviamos pelos Correios (PAC e SEDEX) para todo o Brasil. Em São Paulo capital também haverá retirada combinada. O valor é calculado pelo CEP na sacola.' },
-  { q: 'Vocês atendem empresas?', a: 'Sim. Fazemos brindes a partir de 20 unidades, com arte criada para a sua marca. Peça um orçamento na página de brindes corporativos.' },
-  { q: 'A coleção BoatOat é oficial?', a: 'Não. É uma coleção conceitual criada pela Lilian a partir de lembranças de fã, sem vínculo com os artistas, a produtora ou o evento. Produtos e preços são ilustrativos.' },
+  { q: 'Já posso comprar?', a: 'Ainda não. Este site é uma apresentação: você pode navegar, montar a sacola e simular um pedido, mas nenhum pagamento é cobrado. As vendas começam depois da aprovação do catálogo, dos preços e das integrações de pagamento e frete.', demo: true, en: { q: 'Can I buy now?', a: 'Not yet. This site is a preview: you can browse, fill your bag and simulate an order, but nothing is charged. Sales start once the catalog, prices, payment and shipping are approved.' } },
+  { q: 'Já posso comprar?', a: 'Sim. A loja está em fase de testes: você faz o pedido pelo site e a Fan Joy Store entra em contato para combinar o pagamento (Pix ou link de cartão). O pagamento on-line direto no site chega em breve.', live: true, en: { q: 'Can I buy now?', a: 'Yes! The store is in its testing phase: you place your order on the site and Fan Joy Store gets in touch to arrange payment (Pix or a card payment link). Paying online directly on the site is coming soon.' } },
+  { q: 'O que é “pronta entrega” e “sob encomenda”?', a: 'Itens de pronta entrega já estão no estoque e saem no prazo de separação indicado. Itens sob encomenda são produzidos depois da confirmação do pagamento, e o prazo de produção aparece na página de cada produto.', en: { q: 'What do “ready to ship” and “made to order” mean?', a: 'Ready-to-ship items are already in stock and go out within the handling time shown. Made-to-order items are produced after payment is confirmed, and the production time is shown on each product page.' } },
+  { q: 'Posso personalizar um produto?', a: 'Sim, nos produtos que mostram o campo de personalização. Para ideias maiores, como uma arte nova, use a página de encomendas personalizadas.', en: { q: 'Can I personalize a product?', a: 'Yes, on products that show the personalization field. For bigger ideas, like brand-new art, use the custom orders page.' } },
+  { q: 'Como funciona a entrega?', a: 'Enviamos pelos Correios (PAC e SEDEX) para todo o Brasil. Em São Paulo capital também haverá retirada combinada. O valor é calculado pelo CEP na sacola.', en: { q: 'How does shipping work?', a: 'We ship anywhere in Brazil with Correios (PAC and SEDEX). In the city of São Paulo, you can also arrange a pickup. The cost is calculated from your CEP (Brazilian postal code) in the bag. We don’t ship outside Brazil yet.' } },
+  { q: 'Vocês atendem empresas?', a: 'Sim. Fazemos brindes a partir de 20 unidades, com arte criada para a sua marca. Peça um orçamento na página de brindes corporativos.', en: { q: 'Do you work with companies?', a: 'Yes. We make corporate gifts from 20 units, with art created for your brand. Ask for a quote on the corporate gifts page.' } },
+  { q: 'A coleção BoatOat é oficial?', a: 'Não. É uma coleção conceitual criada pela Lilian a partir de lembranças de fã, sem vínculo com os artistas, a produtora ou o evento. Produtos e preços são ilustrativos.', en: { q: 'Is the BoatOat collection official?', a: 'No. It’s a concept collection Lilian created from fan memories, with no connection to the artists, the producer or the event. Products and prices are for illustration.' } },
 ];

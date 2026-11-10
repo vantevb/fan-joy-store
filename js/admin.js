@@ -229,6 +229,17 @@ function ordersAdmin() {
   };
 }
 
+// Textos em inglês do produto novo. O que ficar vazio aparece em português na versão em inglês da loja.
+function englishTexts(name, desc, pz) {
+  if (!name && !desc) return undefined;
+  const en = {};
+  if (name) en.name = name;
+  if (desc) { en.short = desc.slice(0, 80); en.description = desc; }
+  en.details = ['Product added from the shop panel'];
+  if (pz) en.personalization = { label: 'Name or phrase', placeholder: 'E.g.: your name' };
+  return en;
+}
+
 function productsAdmin() {
   return {
     html: shell('painel-produtos', '<div id="pp"></div>'),
@@ -263,6 +274,8 @@ function productsAdmin() {
               <label class="field" for="np-stock"><span>Estoque inicial</span><input id="np-stock" type="number" min="0" value="10"></label>
               <label class="field" for="np-days"><span>Prazo de produção (dias úteis)</span><input id="np-days" type="number" min="1" value="3"></label>
               <label class="field field-wide" for="np-desc"><span>Descrição</span><textarea id="np-desc" rows="3"></textarea></label>
+              <label class="field field-wide" for="np-name-en"><span>Nome em inglês <small>(opcional; vazio mostra o português)</small></span><input id="np-name-en" lang="en"></label>
+              <label class="field field-wide" for="np-desc-en"><span>Descrição em inglês <small>(opcional)</small></span><textarea id="np-desc-en" rows="3" lang="en"></textarea></label>
               <label class="check field-wide"><input type="checkbox" id="np-pz"> Aceita personalização com nome ou frase</label>
               <p class="fine field-wide">Na versão definitiva, este formulário também recebe fotos, variações e medidas.</p>
               <button class="btn btn-primary" type="submit">Cadastrar</button>
@@ -292,6 +305,7 @@ function productsAdmin() {
             description: $('#np-desc').value.trim() || 'Novidade da Fan Joy Store.', details: ['Produto cadastrado pelo painel'], variations: [],
             art: { kind: 'default', bg: 'cream' },
             personalization: $('#np-pz').checked ? { label: 'Nome ou frase', max: 20, placeholder: 'Ex.: seu nome' } : null,
+            en: englishTexts($('#np-name-en').value.trim(), $('#np-desc-en').value.trim(), $('#np-pz').checked),
           }); } catch (ex) { toast(ex.message); btn.disabled = false; return; }
           toast(`${name} cadastrado e já aparece na loja`);
           render();

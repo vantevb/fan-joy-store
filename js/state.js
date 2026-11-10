@@ -1,6 +1,7 @@
 // Estado da demonstração. Tudo fica salvo apenas neste navegador (localStorage).
 // Na operação definitiva, estes dados vêm do back-end com autenticação.
 import { PRODUCTS, CATEGORIES, COLLECTIONS, STATUS } from './data.js';
+import { isEn, tr, loc } from './i18n.js';
 
 const KEY = 'fjs:v1:';
 const DAY = 86400000;
@@ -30,13 +31,39 @@ export function setLiveCatalog(list) { liveCatalog = list.map((p) => ({ active: 
 export const isLive = () => liveCatalog !== null;
 
 export function products() {
-  if (liveCatalog) return liveCatalog;
+  if (liveCatalog) return isEn() ? liveCatalog.map(localize) : liveCatalog;
   return [...PRODUCTS, ...custom].map((p) => {
     const o = overrides[p.id] || {};
     const merged = { active: true, variations: [], details: [], ...p, ...o };
     merged.createdAt = p.createdAt ?? now0 - (p.createdDaysAgo ?? 0) * DAY;
-    return merged;
+    return localize(merged);
   });
+}
+
+// Versão em inglês de um produto para exibição. As variações continuam com os rótulos em português,
+// que são os valores enviados ao servidor; a tradução delas é mostrada por optionText().
+function localize(p) {
+  const e = p.en;
+  if (!isEn() || !e) return p;
+  return {
+    ...p,
+    name: e.name || p.name,
+    short: e.short || p.short,
+    description: e.description || p.description,
+    details: e.details?.length ? e.details : p.details,
+    images: (p.images || []).map((im, i) => ({ ...im, alt: e.alts?.[i] || im.alt })),
+    art: p.art && e.artText ? { ...p.art, text: e.artText } : p.art,
+    personalization: p.personalization && e.personalization ? { ...p.personalization, ...e.personalization, max: p.personalization.max } : p.personalization,
+  };
+}
+
+// Nome da variação e da opção no idioma da loja (casadas por posição com a versão em inglês).
+export function optionText(p, vName, oLabel) {
+  const vi = (p?.variations || []).findIndex((v) => v.name === vName);
+  const ev = vi >= 0 && isEn() ? p.en?.variations?.[vi] : null;
+  if (!ev) return { name: vName, label: oLabel };
+  const oi = p.variations[vi].options.findIndex((o) => o.label === oLabel);
+  return { name: ev.name || vName, label: (oi >= 0 && ev.options?.[oi]) || oLabel };
 }
 export function product(id) { return products().find((p) => p.id === id); }
 export function updateProduct(id, patch) {
@@ -49,18 +76,26 @@ export function addProduct(p) {
   save('customProducts', custom);
   emit();
 }
-export const categoryName = (id) => CATEGORIES.find((c) => c.id === id)?.name ?? id;
-export const collectionName = (id) => COLLECTIONS.find((c) => c.id === id)?.name ?? id;
-export const statusLabel = (id) => STATUS.find((s) => s.id === id)?.label ?? id;
+export const categoryName = (id) => { const c = CATEGORIES.find((x) => x.id === id); return c ? loc(c, 'name') : id; };
+export const collectionName = (id) => { const c = COLLECTIONS.find((x) => x.id === id); return c ? loc(c, 'name') : id; };
+export const statusLabel = (id) => { const st = STATUS.find((x) => x.id === id); return st ? loc(st, 'label') : id; };
+// Coleção com nome, chamada e resumo no idioma da loja.
+export const collectionView = (c) => ({ ...c, name: loc(c, 'name'), tagline: loc(c, 'tagline'), summary: loc(c, 'summary') });
+
+// Frete: as regiões e a retirada vêm em português (também do servidor); aqui viram texto de exibição.
+const REGION_EN = { 'São Paulo capital': 'São Paulo (city)', 'Estado de São Paulo': 'São Paulo (state)', Sudeste: 'Southeast Brazil', 'Nordeste e Centro-Oeste': 'Northeast and Center-West Brazil', 'Sul e Norte': 'South and North Brazil' };
+const SHIP_EN = { 'Retirada combinada em São Paulo': 'Pickup in São Paulo (by arrangement)' };
+export const regionName = (r) => (isEn() ? REGION_EN[r] || r : r);
+export const shipName = (n) => (isEn() ? SHIP_EN[n] || n : n);
 
 export function availability(p) {
-  if (!p.active) return { id: 'indisponivel', label: 'Indisponível', buyable: false };
-  if (p.mode === 'gratis') return { id: 'gratis', label: 'Grátis para baixar', buyable: false };
-  if (p.mode === 'orcamento') return { id: 'orcamento', label: 'Sob orçamento', buyable: false };
-  if (p.mode === 'encomenda') return { id: 'encomenda', label: `Sob encomenda · produção em ${p.productionDays} dias úteis`, buyable: true };
-  if (p.stock <= 0) return { id: 'esgotado', label: 'Esgotado', buyable: false };
-  if (p.stock <= p.lowStock) return { id: 'ultimas', label: `Últimas ${p.stock} unidades`, buyable: true };
-  return { id: 'pronta', label: 'Pronta entrega', buyable: true };
+  if (!p.active) return { id: 'indisponivel', label: tr('Indisponível', 'Unavailable'), buyable: false };
+  if (p.mode === 'gratis') return { id: 'gratis', label: tr('Grátis para baixar', 'Free download'), buyable: false };
+  if (p.mode === 'orcamento') return { id: 'orcamento', label: tr('Sob orçamento', 'Quote on request'), buyable: false };
+  if (p.mode === 'encomenda') return { id: 'encomenda', label: tr(`Sob encomenda · produção em ${p.productionDays} dias úteis`, `Made to order · ${p.productionDays} business days to make`), buyable: true };
+  if (p.stock <= 0) return { id: 'esgotado', label: tr('Esgotado', 'Sold out'), buyable: false };
+  if (p.stock <= p.lowStock) return { id: 'ultimas', label: tr(`Últimas ${p.stock} unidades`, `Only ${p.stock} left`), buyable: true };
+  return { id: 'pronta', label: tr('Pronta entrega', 'In stock'), buyable: true };
 }
 
 // ---------- Sacola ----------

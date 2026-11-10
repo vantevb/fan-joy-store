@@ -17,12 +17,12 @@ out.push(CATEGORIES.map((c, i) => `  (${q(c.id)}, ${q(c.name)}, ${i})`).join(',\
 out.push('insert into public.collections (id, name, tagline, summary, concept, image, tone, position) values');
 out.push(COLLECTIONS.map((c, i) => `  (${q(c.id)}, ${q(c.name)}, ${q(c.tagline)}, ${q(c.summary)}, ${!!c.concept}, ${q(c.image)}, ${q(c.tone)}, ${i})`).join(',\n')
   + '\non conflict (id) do update set name = excluded.name, tagline = excluded.tagline, summary = excluded.summary, concept = excluded.concept, image = excluded.image, tone = excluded.tone, position = excluded.position;', '');
-out.push('insert into public.products (id, name, category_id, collection_id, price, mode, stock, low_stock, production_days, featured, active, short, description, details, images, art, variations, personalization, weight_g, length_cm, width_cm, height_cm) values');
+out.push('insert into public.products (id, name, category_id, collection_id, price, mode, stock, low_stock, production_days, featured, active, short, description, details, images, art, variations, personalization, weight_g, length_cm, width_cm, height_cm, i18n) values');
 out.push(PRODUCTS.map((p) => {
   const pack = PACK[p.category] || [null, null, null, null];
   return `  (${[q(p.id), q(p.name), q(p.category), q(p.collection), p.price ?? 'null', q(p.mode), p.stock, p.lowStock, p.productionDays,
     !!p.featured, p.active !== false, q(p.short), q(p.description), j(p.details || []), j(p.images || []), j(p.art || null),
-    j(p.variations || []), j(p.personalization || null), ...pack.map((x) => x ?? 'null')].join(', ')})`;
+    j(p.variations || []), j(p.personalization || null), ...pack.map((x) => x ?? 'null'), j(p.en ? { en: p.en } : {})].join(', ')})`;
 }).join(',\n') + '\non conflict (id) do nothing;', '');
 out.push('commit;', '');
 writeFileSync(new URL('../supabase/seed.sql', import.meta.url), out.join('\n'));

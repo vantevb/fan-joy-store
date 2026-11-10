@@ -4,6 +4,7 @@
 // As páginas usam só estas funções, então funcionam igual nos dois modos.
 import * as S from './state.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { tr } from './i18n.js';
 
 export const live = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const DEMO_AUTH = 'fjs:v1:admin';
@@ -18,7 +19,7 @@ function client() {
           const s = document.createElement('script');
           s.src = 'js/vendor/supabase.js';
           s.onload = resolve;
-          s.onerror = () => reject(new Error('Não foi possível carregar a conexão com a loja. Verifique sua internet.'));
+          s.onerror = () => reject(new Error(tr('Não foi possível carregar a conexão com a loja. Verifique sua internet.', 'Couldn’t connect to the shop. Check your internet connection.')));
           document.head.appendChild(s);
         });
       }
@@ -32,28 +33,31 @@ function client() {
 function friendly(error) {
   const raw = String(error?.message || error || '');
   const [code, a, b] = raw.split(':');
-  const name = (id) => S.product(id)?.name || 'um dos produtos';
+  const name = (id) => S.product(id)?.name || tr('um dos produtos', 'one of the products');
+  const vname = (id, v) => S.optionText(S.product(id), v, '').name;
   const msgs = {
-    estoque_insuficiente: () => (Number(b) > 0 ? `Só temos ${b} ${Number(b) === 1 ? 'unidade' : 'unidades'} de ${name(a)}. Ajuste a quantidade na sacola.` : `${name(a)} acabou de esgotar. Remova o item da sacola para continuar.`),
-    produto_indisponivel: () => `${name(a)} não está mais disponível. Remova o item da sacola para continuar.`,
-    variacao_invalida: () => `Escolha de novo a opção “${b}” de ${name(a)}.`,
-    variacao_obrigatoria: () => `Escolha a opção “${b}” de ${name(a)}.`,
-    personalizacao_invalida: () => `A personalização de ${name(a)} passou do limite de caracteres.`,
-    quantidade_invalida: () => 'A quantidade de cada item precisa ficar entre 1 e 20.',
-    cep_invalido: () => 'Confira o CEP: ele precisa ter 8 números.',
-    frete_invalido: () => 'Essa forma de entrega não está disponível para o seu CEP. Calcule o frete de novo na sacola.',
-    endereco_invalido: () => 'Informe o endereço e o número para a entrega.',
-    dados_cliente_invalidos: () => 'Confira nome, e-mail e WhatsApp.',
-    parcelas_invalidas: () => 'O parcelamento vai até 3 vezes.',
-    orcamento_invalido: () => 'Para brindes corporativos, informe a empresa e no mínimo 20 unidades.',
-    dados_invalidos: () => 'Preencha nome, e-mail e a descrição do pedido.',
+    estoque_insuficiente: () => (Number(b) > 0
+      ? tr(`Só temos ${b} ${Number(b) === 1 ? 'unidade' : 'unidades'} de ${name(a)}. Ajuste a quantidade na sacola.`, `We only have ${b} of ${name(a)} left. Please adjust the quantity in your bag.`)
+      : tr(`${name(a)} acabou de esgotar. Remova o item da sacola para continuar.`, `${name(a)} just sold out. Remove it from your bag to continue.`)),
+    produto_indisponivel: () => tr(`${name(a)} não está mais disponível. Remova o item da sacola para continuar.`, `${name(a)} is no longer available. Remove it from your bag to continue.`),
+    variacao_invalida: () => tr(`Escolha de novo a opção “${vname(a, b)}” de ${name(a)}.`, `Please choose the “${vname(a, b)}” option for ${name(a)} again.`),
+    variacao_obrigatoria: () => tr(`Escolha a opção “${vname(a, b)}” de ${name(a)}.`, `Please choose the “${vname(a, b)}” option for ${name(a)}.`),
+    personalizacao_invalida: () => tr(`A personalização de ${name(a)} passou do limite de caracteres.`, `The personalization for ${name(a)} is over the character limit.`),
+    quantidade_invalida: () => tr('A quantidade de cada item precisa ficar entre 1 e 20.', 'Each item’s quantity must be between 1 and 20.'),
+    cep_invalido: () => tr('Confira o CEP: ele precisa ter 8 números.', 'Check your CEP: it must have 8 digits.'),
+    frete_invalido: () => tr('Essa forma de entrega não está disponível para o seu CEP. Calcule o frete de novo na sacola.', 'That shipping option isn’t available for your CEP. Calculate shipping again in your bag.'),
+    endereco_invalido: () => tr('Informe o endereço e o número para a entrega.', 'Enter the street address and number for delivery.'),
+    dados_cliente_invalidos: () => tr('Confira nome, e-mail e WhatsApp.', 'Check your name, e-mail and WhatsApp number.'),
+    parcelas_invalidas: () => tr('O parcelamento vai até 3 vezes.', 'You can split the payment into up to 3 installments.'),
+    orcamento_invalido: () => tr('Para brindes corporativos, informe a empresa e no mínimo 20 unidades.', 'For corporate gifts, enter your company and at least 20 units.'),
+    dados_invalidos: () => tr('Preencha nome, e-mail e a descrição do pedido.', 'Fill in your name, e-mail and a description of your request.'),
     acesso_negado: () => 'Sua conta não tem acesso a esta área. Entre de novo com a conta da loja.',
     pedido_cancelado: () => 'Este pedido foi cancelado e não pode mudar de status. Se a cliente ainda quiser, faça um pedido novo.',
   };
   if (msgs[code]) return new Error(msgs[code]());
-  if (/Failed to fetch|NetworkError|Load failed/i.test(raw)) return new Error('Sem conexão com a loja agora. Verifique sua internet e tente de novo.');
+  if (/Failed to fetch|NetworkError|Load failed/i.test(raw)) return new Error(tr('Sem conexão com a loja agora. Verifique sua internet e tente de novo.', 'Can’t reach the shop right now. Check your connection and try again.'));
   if (/Invalid login credentials/i.test(raw)) return new Error('E-mail ou senha incorretos.');
-  return new Error('Algo deu errado do nosso lado. Tente de novo em instantes.');
+  return new Error(tr('Algo deu errado do nosso lado. Tente de novo em instantes.', 'Something went wrong on our side. Please try again in a moment.'));
 }
 
 async function rpc(name, args) {

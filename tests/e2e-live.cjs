@@ -16,7 +16,7 @@ async function step(name, fn) {
 const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 
 async function livePage(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'pt-BR' });
   await ctx.route('**/js/config.js', (route) => route.fulfill({
     contentType: 'application/javascript',
     body: `export const SUPABASE_URL = '${BRIDGE}'; export const SUPABASE_ANON_KEY = 'chave-de-teste';`,

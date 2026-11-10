@@ -7,7 +7,7 @@ DB=fanjoy_teste_$$
 psql -X -q -c "create database $DB" >/dev/null
 trap 'psql -X -q -c "drop database if exists $DB" >/dev/null' EXIT
 psql -X -q -v ON_ERROR_STOP=1 -d "$DB" -f supabase/tests/local-auth-shim.sql >/dev/null
-psql -X -q -v ON_ERROR_STOP=1 -d "$DB" -f supabase/migrations/20261107000001_loja.sql >/dev/null
+for f in supabase/migrations/*.sql; do psql -X -q -v ON_ERROR_STOP=1 -d "$DB" -f "$f" >/dev/null; done
 psql -X -q -v ON_ERROR_STOP=1 -d "$DB" -f supabase/seed.sql >/dev/null
 out=$(psql -X -q -v ON_ERROR_STOP=1 -d "$DB" -f supabase/tests/banco.test.sql)
 echo "$out"

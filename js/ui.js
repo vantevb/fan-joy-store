@@ -1,15 +1,18 @@
 // Utilitários de interface e as ilustrações demonstrativas (SVG) dos produtos sem arte definitiva.
 
-export const brl = (v) => (v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+import { tr, locale } from './i18n.js';
+
+// Preços sempre em reais; em inglês aparecem no formato "R$50.00".
+export const brl = (v) => (v ?? 0).toLocaleString(locale(), { style: 'currency', currency: 'BRL' });
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-export const fmtDate = (t) => new Date(t).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-export const fmtDateTime = (t) => new Date(t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+export const fmtDate = (t) => new Date(t).toLocaleDateString(locale(), { day: '2-digit', month: 'short' });
+export const fmtDateTime = (t) => new Date(t).toLocaleString(locale(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
 export function priceLabel(p) {
-  if (p.mode === 'gratis') return 'Grátis';
-  if (p.mode === 'orcamento' || p.price == null) return 'Sob orçamento';
+  if (p.mode === 'gratis') return tr('Grátis', 'Free');
+  if (p.mode === 'orcamento' || p.price == null) return tr('Sob orçamento', 'Quote on request');
   const from = (p.variations || []).some((v) => v.options.some((o) => o.add > 0));
-  return (from ? 'a partir de ' : '') + brl(p.price);
+  return (from ? tr('a partir de ', 'from ') : '') + brl(p.price);
 }
 
 const TONES = {
@@ -99,7 +102,7 @@ export function artSVG(art, title) {
       body = flower(200, 200, 60);
   }
   const bg = art.bg === 'navy' ? '#E7E9F2' : t.bg;
-  return `<svg viewBox="0 0 400 400" role="img" aria-label="${esc(title)}: modelo demonstrativo" xmlns="http://www.w3.org/2000/svg">
+  return `<svg viewBox="0 0 400 400" role="img" aria-label="${esc(title)}: ${tr('modelo demonstrativo', 'sample illustration')}" xmlns="http://www.w3.org/2000/svg">
     <rect width="400" height="400" fill="${bg}"/>${body}</svg>`;
 }
 
