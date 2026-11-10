@@ -68,24 +68,24 @@ const BOAT_NOTE = 'Arte original da Lilian. Coleção conceitual, sem vínculo o
 export const PRODUCTS = [
   {
     id: 'caneca-ta-bom', name: 'Caneca “Tá bom!”', category: 'canecas', collection: 'boatoat',
-    price: 42.9, stock: 14, lowStock: 5, mode: 'pronta', productionDays: 2, createdDaysAgo: 120, featured: true,
+    price: 50, stock: 14, lowStock: 5, mode: 'pronta', productionDays: 2, createdDaysAgo: 120, featured: true,
     images: [
       { src: 'img/arte-ta-bom.webp', alt: 'Mockup de três canecas brancas com a arte “Tá bom!” da Lilian: lado esquerdo, meio e lado direito, e a faixa completa da estampa abaixo', fit: 'contain' },
     ],
     short: 'A resposta para tudo, agora no seu café.',
     description: 'Durante o fanmeeting, o Boat respondia “Tá bom!” para quase tudo. A Lilian transformou a lembrança numa estampa contínua que dá a volta inteira na caneca.',
     details: ['Cerâmica branca, 325 ml', 'Impressão por sublimação, cobre a caneca toda', 'Pode ir ao micro-ondas; lavar à mão preserva a arte por mais tempo', BOAT_NOTE],
-    variations: [{ name: 'Modelo', options: [{ label: 'Cerâmica branca', add: 0 }, { label: 'Mágica (revela a arte com calor)', add: 12 }] }],
+    variations: [{ name: 'Modelo', options: [{ label: 'Branca', add: 0 }, { label: 'Colorida (alça e interior coloridos)', add: 10 }, { label: 'Mágica (revela a arte com calor)', add: 20 }] }],
     personalization: { label: 'Nome na alça', max: 12, placeholder: 'Ex.: Lilian' },
   },
   {
     id: 'caneca-gostoso', name: 'Caneca “Gostoso!”', category: 'canecas', collection: 'boatoat',
-    price: 42.9, stock: 3, lowStock: 5, mode: 'pronta', productionDays: 2, createdDaysAgo: 120, featured: true,
+    price: 50, stock: 3, lowStock: 5, mode: 'pronta', productionDays: 2, createdDaysAgo: 120, featured: true,
     images: [{ src: 'img/caneca-gostoso.webp', alt: 'Caneca branca com a arte “Gostoso!” da Lilian, com seis personagens fazendo coração com as mãos', fit: 'cover' }],
     short: 'Para quem foi chamado de fofo e respondeu à altura.',
     description: 'Quando os fãs chamavam o Oat de fofo, ele corrigia: “gostoso!”. A arte da Lilian guarda esse momento com corações e muita risada.',
     details: ['Cerâmica branca, 325 ml', 'Impressão por sublimação', 'Pode ir ao micro-ondas', BOAT_NOTE],
-    variations: [{ name: 'Modelo', options: [{ label: 'Cerâmica branca', add: 0 }, { label: 'Mágica (revela a arte com calor)', add: 12 }] }],
+    variations: [{ name: 'Modelo', options: [{ label: 'Branca', add: 0 }, { label: 'Colorida (alça e interior coloridos)', add: 10 }, { label: 'Mágica (revela a arte com calor)', add: 20 }] }],
     personalization: { label: 'Nome na alça', max: 12, placeholder: 'Ex.: Mari' },
   },
   {
@@ -148,12 +148,12 @@ export const PRODUCTS = [
   // Demais coleções: modelos demonstrativos desenhados pela VB Studio até a Lilian enviar as artes definitivas.
   {
     id: 'caneca-mais-um-episodio', name: 'Caneca “Só mais um episódio”', category: 'canecas', collection: 'dorama-club',
-    price: 44.9, stock: 11, lowStock: 4, mode: 'pronta', productionDays: 2, createdDaysAgo: 95,
+    price: 50, stock: 11, lowStock: 4, mode: 'pronta', productionDays: 2, createdDaysAgo: 95,
     art: { kind: 'mug', text: 'só mais um\nepisódio', bg: 'red' },
     short: 'Para a maratona que começou às 22h e terminou às 4h.',
     description: 'Caneca para acompanhar o chá das maratonas de dorama.',
     details: ['Cerâmica branca, 325 ml', 'Arte demonstrativa: será substituída pela arte da Lilian'],
-    variations: [{ name: 'Modelo', options: [{ label: 'Cerâmica branca', add: 0 }, { label: 'Alça e interior vermelhos', add: 6 }] }],
+    variations: [{ name: 'Modelo', options: [{ label: 'Branca', add: 0 }, { label: 'Colorida (alça e interior vermelhos)', add: 10 }, { label: 'Mágica (revela a arte com calor)', add: 20 }] }],
     personalization: { label: 'Nome', max: 12, placeholder: 'Ex.: Ana' },
   },
   {

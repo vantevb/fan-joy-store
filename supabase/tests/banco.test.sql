@@ -47,13 +47,13 @@ select set_config('t.o1', (public.place_order(
     {"id":"bottons-dupla","qty":1,"options":{"Tamanho":"58 mm"}}]',
   '{"cep":"30130-000","service":"sedex"}',
   '{"method":"pix"}'))::text, false);
-select tests.ok((current_setting('t.o1')::jsonb->>'total')::numeric = (54.90*2 + 22.90) - 6.64 + (round(21 * 1.3 * 1.7, 1) - 0.1),
+select tests.ok((current_setting('t.o1')::jsonb->>'total')::numeric = (70.00*2 + 22.90) - 8.15 + (round(21 * 1.3 * 1.7, 1) - 0.1),
   'total recalculado no servidor (variações, desconto Pix, frete)', current_setting('t.o1'));
 
 select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"caneca-ta-bom","qty":1,"options":{"Modelo":"Ouro"}}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'variacao_invalida', 'variação inexistente é recusada');
 select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"caneca-ta-bom","qty":1}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'variacao_obrigatoria', 'variação obrigatória');
-select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"caneca-ta-bom","qty":1,"options":{"Modelo":"Cerâmica branca"},"personalization":"Nome comprido demais"}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'personalizacao_invalida', 'personalização acima do limite');
-select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"caneca-gostoso","qty":4,"options":{"Modelo":"Cerâmica branca"}}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'estoque_insuficiente', 'não vende além do estoque');
+select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"caneca-ta-bom","qty":1,"options":{"Modelo":"Branca"},"personalization":"Nome comprido demais"}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'personalizacao_invalida', 'personalização acima do limite');
+select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"caneca-gostoso","qty":4,"options":{"Modelo":"Branca"}}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'estoque_insuficiente', 'não vende além do estoque');
 select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"ecobag-everyday","qty":1}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'produto_indisponivel', 'produto inativo não é vendido');
 select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"wallpaper-fan-joy","qty":1}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'produto_indisponivel', 'freebie não entra em pedido');
 select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"adesivos-boatoat","qty":1}]','{"cep":"30130000","service":"retirada"}','{"method":"pix"}')$$, 'frete_invalido', 'retirada só para São Paulo capital');

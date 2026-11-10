@@ -51,9 +51,9 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   await step('página de produto: variação muda o preço e personalização respeita o limite', async () => {
     await page.goto(BASE + '/#p-caneca-ta-bom');
     await page.waitForSelector('#add');
-    expect((await page.textContent('#price')).includes('42,90'), 'preço base');
+    expect((await page.textContent('#price')).includes('50,00'), 'preço base');
     await page.locator('label.opt', { hasText: 'Mágica' }).click();
-    expect((await page.textContent('#price')).includes('54,90'), 'preço com variação');
+    expect((await page.textContent('#price')).includes('70,00'), 'preço com variação');
     await page.fill('#pz', 'Lilian com nome muito longo');
     expect((await page.inputValue('#pz')).length === 12, 'limite de 12 caracteres');
     await page.fill('#pz', 'Lilian');
