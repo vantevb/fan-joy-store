@@ -13,9 +13,19 @@ const TITLES = {
 };
 const isAdminRoute = (route) => route.startsWith('painel') || route === 'sistema-opcional';
 
+// Volta do Mercado Pago: ele devolve a cliente para /?pedido=FJ123456 (com parâmetros dele).
+// Leva para a página do pedido e marca a volta, para a página conferir a confirmação do pagamento.
+(() => {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('pedido');
+  if (!code || !/^[A-Za-z0-9-]{3,20}$/.test(code)) return;
+  try { sessionStorage.setItem('fjs:paid-return', code.toUpperCase()); } catch { /* segue sem a conferência automática */ }
+  history.replaceState(null, '', `${location.pathname}#pedido-${code.toUpperCase()}`);
+})();
+
 function header() {
   return `
-  <div class="demo-bar" role="note">${api.live ? tr('Loja em fase de testes · pagamento on-line ainda não ativado', 'Shop in testing phase · online payment not active yet · shipping within Brazil only') : tr('Apresentação demonstrativa · produtos e preços ilustrativos · nenhum pagamento real', 'Demo shop · illustrative products and prices · no real payments')}</div>
+  <div class="demo-bar" role="note">${api.onlinePayment ? tr('Pix com 5% de desconto · até 3× sem juros no cartão · envio para todo o Brasil', '5% off with Pix · up to 3 interest-free card installments · shipping within Brazil only') : api.live ? tr('Loja em fase de testes · pagamento on-line ainda não ativado', 'Shop in testing phase · online payment not active yet · shipping within Brazil only') : tr('Apresentação demonstrativa · produtos e preços ilustrativos · nenhum pagamento real', 'Demo shop · illustrative products and prices · no real payments')}</div>
   <header class="site-header">
     <div class="wrap header-row">
       <a class="brand" href="#inicio" aria-label="${tr('Fan Joy Store, página inicial', 'Fan Joy Store, home page')}">

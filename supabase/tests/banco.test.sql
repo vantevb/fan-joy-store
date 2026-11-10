@@ -6,10 +6,10 @@ set client_min_messages = warning;
 \o /dev/null
 
 create schema tests;
-grant usage on schema tests to anon, authenticated;
+grant usage on schema tests to anon, authenticated, service_role;
 create table tests.results (n serial, name text, ok boolean, detail text);
-grant insert, select on tests.results to anon, authenticated;
-grant usage on sequence tests.results_n_seq to anon, authenticated;
+grant insert, select on tests.results to anon, authenticated, service_role;
+grant usage on sequence tests.results_n_seq to anon, authenticated, service_role;
 
 create function tests.ok(cond boolean, name text, detail text default '') returns void language sql as $$
   insert into tests.results (name, ok, detail) values (name, coalesce(cond, false), detail) $$;
@@ -20,7 +20,7 @@ begin
 exception when others then
   insert into tests.results (name, ok, detail) values (name, sqlerrm ~* pattern, sqlerrm);
 end $$;
-grant execute on all functions in schema tests to anon, authenticated;
+grant execute on all functions in schema tests to anon, authenticated, service_role;
 
 -- Pessoas: dona (Lilian) e uma cliente logada que não é da equipe
 insert into auth.users values ('00000000-0000-0000-0000-00000000000a', 'lilian@fanjoy.test'), ('00000000-0000-0000-0000-00000000000b', 'cliente@fanjoy.test');
@@ -136,6 +136,28 @@ reset role;
 
 select tests.ok((select count(*) from public.stock_movements where reason = 'cancelamento') = 3 and (select count(*) from public.stock_movements where reason = 'venda') = 3
   and (select count(*) from public.stock_movements where reason = 'ajuste') = 1, 'histórico de estoque: vendas, cancelamento e ajuste');
+
+-- ================= Pagamento on-line (Mercado Pago) =================
+set role anon;
+select tests.fails($$select public.payment_order('X', 'y@z.co')$$, 'permission denied', 'visitante não lê os dados de cobrança');
+select tests.fails($$select public.confirm_payment('X', '1', 1)$$, 'permission denied', 'visitante não marca pedido como pago');
+reset role;
+set role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000a","role":"authenticated"}', false);
+select tests.fails($$select public.confirm_payment('X', '1', 1)$$, 'permission denied', 'nem a dona marca pago pela API: só o Mercado Pago confirma');
+reset role;
+set role service_role;
+select tests.ok(public.payment_order(current_setting('t.o2')::jsonb->>'code', 'outra@exemplo.com') is null, 'cobrança exige o e-mail do pedido');
+select tests.ok((public.payment_order(current_setting('t.o2')::jsonb->>'code', ' BIA@exemplo.com')->>'total')::numeric = 29.90, 'cobrança usa o total do banco');
+select tests.ok(public.confirm_payment(current_setting('t.o2')::jsonb->>'code', 'mp-1', 10) = 'valor_divergente', 'pagamento menor que o total não aprova');
+select tests.ok(public.confirm_payment(current_setting('t.o2')::jsonb->>'code', 'mp-2', 29.90) = 'pago', 'pagamento aprovado marca o pedido como pago');
+reset role;
+select tests.ok((select status = 'pago' and paid_at is not null and payment_ref = 'mp-2' from public.orders where code = current_setting('t.o2')::jsonb->>'code'), 'pedido pago guarda a data e o pagamento');
+set role service_role;
+select tests.ok(public.confirm_payment(current_setting('t.o2')::jsonb->>'code', 'mp-2', 29.90) = 'ja_confirmado', 'aviso repetido do mesmo pagamento é ignorado');
+select tests.ok(public.confirm_payment(current_setting('t.o3')::jsonb->>'code', 'mp-3', 999) = 'pago_apos_cancelamento', 'pagamento de pedido cancelado não reabre o pedido');
+reset role;
+select tests.ok((select status = 'cancelado' and notes like '%mp-3%devolver%' from public.orders where code = current_setting('t.o3')::jsonb->>'code'), 'pagamento após cancelamento fica anotado para devolução');
 
 \o
 \pset format unaligned

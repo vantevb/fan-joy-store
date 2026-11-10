@@ -3,10 +3,22 @@
 //  - loja real: banco Supabase, quando js/config.js tem URL e chave.
 // As páginas usam só estas funções, então funcionam igual nos dois modos.
 import * as S from './state.js';
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, PAGAMENTO_ONLINE } from './config.js';
 import { tr } from './i18n.js';
 
 export const live = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+// Loja real com pagamento pelo Mercado Pago (Pix e cartão).
+// Para testar antes de ligar para todo mundo: abra o site com ?pagamento=teste. Vale só para aquela aba
+// (?pagamento=off desliga). Use com as credenciais de TESTE do Mercado Pago, nunca com clientes.
+function paymentTestMode() {
+  try {
+    const q = new URLSearchParams(location.search).get('pagamento');
+    if (q === 'teste') sessionStorage.setItem('fjs:pagamento-teste', '1');
+    if (q === 'off') sessionStorage.removeItem('fjs:pagamento-teste');
+    return sessionStorage.getItem('fjs:pagamento-teste') === '1';
+  } catch { return false; }
+}
+export const onlinePayment = live && (PAGAMENTO_ONLINE === true || paymentTestMode());
 const DEMO_AUTH = 'fjs:v1:admin';
 const MY_ORDERS = 'fjs:v1:myOrders';
 
@@ -129,6 +141,24 @@ export async function submitRequest(r) {
 
 // Na demonstração, o Pix pode ser "pago" com um botão. Na loja real, quem confirma é o meio de pagamento.
 export const canSimulatePayment = !live;
+
+// Gera a cobrança do pedido no Mercado Pago e devolve o link da página de pagamento.
+// O valor vem do banco; o site só informa o código e o e-mail do pedido.
+export async function startPayment(code, email = '') {
+  const e = email || rememberedEmail(String(code).toUpperCase());
+  let r;
+  try {
+    r = await fetch(`${SUPABASE_URL}/functions/v1/criar-pagamento`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, email: e }),
+    });
+  } catch { throw new Error(tr('Sem conexão com a loja agora. Verifique sua internet e tente de novo.', 'Can’t reach the shop right now. Check your connection and try again.')); }
+  const data = await r.json().catch(() => ({}));
+  if (r.ok && data.url) return data.url;
+  if (data.error === 'pedido_nao_aguarda_pagamento') throw new Error(tr('Este pedido não está aguardando pagamento.', 'This order isn’t awaiting payment.'));
+  throw new Error(tr('Não foi possível abrir o pagamento agora. Seu pedido está registrado: tente de novo em instantes pela página do pedido.', 'We couldn’t open the payment page right now. Your order is saved: try again in a moment from the order page.'));
+}
 export function simulatePix(code) { if (!live) S.payPix(code); }
 
 // ---------- Painel ----------

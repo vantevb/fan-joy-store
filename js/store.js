@@ -38,7 +38,8 @@ const grid = (list) => list.length
 
 const conceptNote = () => `<p class="concept-note"><strong>${tr('Coleção conceitual.', 'Concept collection.')}</strong> ${tr('Criada a partir das artes da Lilian, sem vínculo oficial com os artistas, a produtora ou o evento.', 'Created from Lilian’s art, with no official connection to the artists, the producer or the event.')}${api.live ? '' : ` ${tr('Produtos, materiais e preços são ilustrativos.', 'Products, materials and prices are illustrative.')}`}</p>`;
 
-const faqItems = () => FAQ.filter((f) => (api.live ? !f.demo : !f.live));
+// Cada pergunta pode valer só para a demonstração (demo), para a loja sem pagamento on-line (live) ou com ele (online).
+const faqItems = () => FAQ.filter((f) => (api.onlinePayment ? !f.demo && !f.live : api.live ? !f.demo && !f.online : !f.live && !f.online));
 const faqList = (items) => `<div class="faq">${items.map((f) => `<details><summary>${esc(isEn() && f.en ? f.en.q : f.q)}</summary><p>${esc(isEn() && f.en ? f.en.a : f.a)}</p></details>`).join('')}</div>`;
 
 // ---------- Início ----------
@@ -545,7 +546,7 @@ function checkout() {
   return {
     html: `<section class="section page-top"><div class="wrap">
       <p class="eyebrow">${tr('Finalizar compra', 'Checkout')}${api.live ? '' : tr(' · demonstração', ' · demo')}</p><h1 class="h1">${tr('Quase lá.', 'Almost there.')}</h1>
-      <p class="notice">${api.live ? tr('Loja em fase de testes: o pagamento on-line ainda não está ativado. Depois do pedido, a Fan Joy Store entra em contato para combinar o pagamento.', 'The shop is in its testing phase: online payment isn’t active yet. After you order, Fan Joy Store will contact you to arrange payment.') : tr('Nenhum pagamento é cobrado nesta apresentação. Não use dados reais de cartão.', 'No payment is charged in this demo. Don’t use real card details.')}</p>
+      <p class="notice">${api.onlinePayment ? tr('Depois de confirmar, você vai para a página segura do Mercado Pago para pagar com Pix ou cartão. Os dados do cartão não passam pela loja.', 'After you confirm, you’ll go to Mercado Pago’s secure page to pay with Pix or card. Card details never go through the shop.') : api.live ? tr('Loja em fase de testes: o pagamento on-line ainda não está ativado. Depois do pedido, a Fan Joy Store entra em contato para combinar o pagamento.', 'The shop is in its testing phase: online payment isn’t active yet. After you order, Fan Joy Store will contact you to arrange payment.') : tr('Nenhum pagamento é cobrado nesta apresentação. Não use dados reais de cartão.', 'No payment is charged in this demo. Don’t use real card details.')}</p>
       <form id="co" class="checkout" novalidate>
         <div class="co-main">
           <fieldset class="co-step"><legend><span class="step-n">1</span> ${tr('Seus dados', 'Your details')}</legend>
@@ -570,7 +571,8 @@ function checkout() {
               <label class="pay"><input type="radio" name="pay" value="cartao"><span>${tr('<strong>Cartão de crédito</strong> · até 3× sem juros', '<strong>Credit card</strong> · up to 3 interest-free installments')}</span></label>
             </div>
             <div id="card" class="card-form" hidden>
-              ${api.live ? `<div class="row2"><label class="field field-wide" for="cc-inst"><span>${tr('Parcelas', 'Installments')}</span><select id="cc-inst"></select></label></div>
+              ${api.onlinePayment ? `<select id="cc-inst" hidden aria-hidden="true"></select>
+              <p class="fine">${tr('Você escolhe o cartão e as parcelas (até 3× sem juros) na página segura do Mercado Pago.', 'You choose your card and installments (up to 3, interest-free) on Mercado Pago’s secure page.')}</p>` : api.live ? `<div class="row2"><label class="field field-wide" for="cc-inst"><span>${tr('Parcelas', 'Installments')}</span><select id="cc-inst"></select></label></div>
               <p class="fine">${tr('O pagamento com cartão ainda está sendo ativado. Depois do pedido, a Fan Joy Store envia um link seguro de pagamento.', 'Card payment is still being set up. After you order, Fan Joy Store will send you a secure payment link.')}</p>` : `<div class="row2">
                 <label class="field field-wide" for="cc-num"><span>${tr('Número do cartão', 'Card number')}</span><input id="cc-num" inputmode="numeric" autocomplete="off" placeholder="4111 1111 1111 1111"></label>
                 <label class="field field-wide" for="cc-name"><span>${tr('Nome impresso no cartão', 'Name on card')}</span><input id="cc-name" autocomplete="off"></label>
@@ -591,7 +593,7 @@ function checkout() {
           <p class="sum-row"><span>${tr('Frete', 'Shipping')} · ${esc(S.shipName(chosenShip.name))}</span><span>${freeOr(chosenShip.price)}</span></p>
           <p class="sum-row sum-total"><span>Total</span><strong id="co-total"></strong></p>
           <p class="fine">${tr(`Prazo estimado: até ${chosenShip.days} dias úteis, já com produção e separação.`, `Estimated delivery: up to ${chosenShip.days} business days, including production and handling.`)}</p>
-          <button class="btn btn-primary btn-wide" type="submit" id="place">${tr('Confirmar pedido', 'Place order')}</button>
+          <button class="btn btn-primary btn-wide" type="submit" id="place">${api.onlinePayment ? tr('Confirmar e pagar', 'Confirm and pay') : tr('Confirmar pedido', 'Place order')}</button>
           <p class="fine">${tr('Ao confirmar, você concorda com as', 'By placing your order, you agree to the')} <a href="#politicas">${tr('políticas da loja', 'shop policies')}</a>.</p>
         </aside>
       </form>
@@ -644,6 +646,10 @@ function checkout() {
             lines: S.cartLines(),
           });
           S.clearCart();
+          if (api.onlinePayment) {
+            place.textContent = tr('Abrindo o pagamento…', 'Opening payment…');
+            try { location.assign(await api.startPayment(order.code, $('#c-email').value.trim())); return; } catch (payErr) { toast(payErr.message); }
+          }
           go(`#pedido-${order.code}`);
         } catch (ex) {
           place.disabled = false; place.textContent = placeLabel;
@@ -685,7 +691,9 @@ function orderView(o) {
   return `<section class="section page-top"><div class="wrap order">
       <p class="eyebrow">${tr('Pedido', 'Order')} ${esc(o.code)} · ${fmtDateTime(o.createdAt)}</p>
       <h1 class="h1">${title}</h1>
-      <p class="notice">${demo ? tr('Pedido de demonstração: nada foi cobrado e nada será enviado.', 'Demo order: nothing was charged and nothing will be shipped.') : tr('Loja em fase de testes: o pagamento on-line ainda não está ativado. A Fan Joy Store vai entrar em contato para combinar o pagamento.', 'The shop is in its testing phase: online payment isn’t active yet. Fan Joy Store will contact you to arrange payment.')}</p>
+      ${demo ? `<p class="notice">${tr('Pedido de demonstração: nada foi cobrado e nada será enviado.', 'Demo order: nothing was charged and nothing will be shipped.')}</p>`
+        : api.onlinePayment ? (o.status === 'aguardando' ? `<div class="notice pay-now"><p>${tr('Falta o pagamento. Pague com Pix ou cartão na página segura do Mercado Pago. Se você acabou de pagar, a confirmação pode levar alguns instantes.', 'Payment pending. Pay with Pix or card on Mercado Pago’s secure page. If you just paid, the confirmation may take a few moments.')}</p><button class="btn btn-primary" id="pay-now" type="button">${tr('Pagar agora', 'Pay now')}</button></div>` : '')
+        : `<p class="notice">${tr('Loja em fase de testes: o pagamento on-line ainda não está ativado. A Fan Joy Store vai entrar em contato para combinar o pagamento.', 'The shop is in its testing phase: online payment isn’t active yet. Fan Joy Store will contact you to arrange payment.')}</p>`}
       ${o.status === 'cancelado' ? '' : `<ol class="timeline" aria-label="${tr('Andamento do pedido', 'Order progress')}">${FLOW.map((s, i) => `<li class="${i <= idx ? 'is-done' : ''} ${i === idx ? 'is-now' : ''}"><span></span>${esc(S.statusLabel(s))}</li>`).join('')}</ol>`}
       ${o.trackingCode ? `<p class="notice">${tr('Código de rastreio', 'Tracking code')}: <strong>${esc(o.trackingCode)}</strong></p>` : ''}
       ${o.status === 'aguardando' && o.payment.method === 'pix' && demo ? `<div class="pix-box">
@@ -730,6 +738,17 @@ function orderPage(code) {
       if (location.hash.slice(1) !== `pedido-${code}`) return;
       if (!o) { root.innerHTML = notFoundHtml; return; }
       root.innerHTML = orderView(o);
+      const payNow = root.querySelector('#pay-now');
+      if (payNow) {
+        payNow.onclick = async () => {
+          payNow.disabled = true; payNow.textContent = tr('Abrindo o pagamento…', 'Opening payment…');
+          try { location.assign(await api.startPayment(o.code)); } catch (e) { toast(e.message); payNow.disabled = false; payNow.textContent = tr('Pagar agora', 'Pay now'); }
+        };
+        // Voltando do Mercado Pago: a confirmação chega em segundos; confere de novo algumas vezes.
+        if (sessionStorage.getItem('fjs:paid-return') === o.code && (orderPage.tries = (orderPage.tries || 0) + 1) <= 6) {
+          setTimeout(() => { if (location.hash.slice(1) === `pedido-${code}`) window.dispatchEvent(new HashChangeEvent('hashchange')); }, 5000);
+        }
+      }
       const sim = root.querySelector('#sim-pay');
       if (sim) sim.onclick = () => { api.simulatePix(o.code); toast(tr('Pagamento aprovado (simulação)', 'Payment approved (simulation)')); window.dispatchEvent(new HashChangeEvent('hashchange')); };
       const copy = root.querySelector('#copy-pix');

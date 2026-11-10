@@ -15,11 +15,11 @@ async function step(name, fn) {
 }
 const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 
-async function livePage(browser) {
+async function livePage(browser, { online = false } = {}) {
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'pt-BR' });
   await ctx.route('**/js/config.js', (route) => route.fulfill({
     contentType: 'application/javascript',
-    body: `export const SUPABASE_URL = '${BRIDGE}'; export const SUPABASE_ANON_KEY = 'chave-de-teste';`,
+    body: `export const SUPABASE_URL = '${BRIDGE}'; export const SUPABASE_ANON_KEY = 'chave-de-teste'; export const PAGAMENTO_ONLINE = ${online};`,
   }));
   await ctx.addInitScript({ content: `window.__FJS_BRIDGE__ = ${JSON.stringify(BRIDGE)};` });
   await ctx.addInitScript({ path: require('path').join(__dirname, 'live/fake-supabase.js') });
@@ -138,6 +138,42 @@ async function livePage(browser) {
     await page.click('#req button[type="submit"]');
     await page.waitForSelector('#req-ok:not([hidden])');
     expect(sql("select qty from public.requests where company = 'Empresa Real'") === '50', 'solicitação no banco');
+  });
+
+  console.log('Pagamento on-line');
+  await step('com o pagamento ligado, o checkout leva ao Mercado Pago e a volta mostra o pedido pago', async () => {
+    const p = await livePage(browser, { online: true });
+    let sent = null;
+    // A Edge Function criar-pagamento é simulada: devolve um "link do Mercado Pago" que volta direto para a loja.
+    await p.route('**/functions/v1/criar-pagamento', async (route) => {
+      sent = JSON.parse(route.request().postData());
+      await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ url: `${SITE}/?pedido=${sent.code}&collection_status=approved` }) });
+    });
+    await p.goto(SITE + '/#p-caderno-diario-dorama');
+    await p.click('#add');
+    await p.goto(SITE + '/#sacola');
+    await p.fill('#cep', '30130-000');
+    await p.click('#cep-form button');
+    await p.click('#to-checkout');
+    expect((await p.textContent('.notice')).includes('Mercado Pago'), 'aviso de pagamento pelo Mercado Pago');
+    expect((await p.textContent('#place')).includes('Confirmar e pagar'), 'botão de pagar');
+    await p.fill('#c-name', 'Duda Paga');
+    await p.fill('#c-email', 'duda@exemplo.com');
+    await p.fill('#c-phone', '31999990000');
+    await p.fill('#c-street', 'Rua B');
+    await p.fill('#c-num', '20');
+    await p.fill('#c-city', 'Belo Horizonte, MG');
+    await p.click('#place');
+    await p.waitForFunction(() => location.hash.startsWith('#pedido-') && !location.search);
+    expect(sent && sent.email === 'duda@exemplo.com' && /^FJ\d{6}$/.test(sent.code), `pedido enviado ao pagamento: ${JSON.stringify(sent)}`);
+    await p.waitForSelector('#pay-now');
+    // O aviso do Mercado Pago chega pela Edge Function mercadopago-webhook, que chama confirm_payment.
+    const total = sql(`select total from public.orders where code = '${sent.code}'`);
+    expect(sql(`select public.confirm_payment('${sent.code}', 'mp-teste', ${total})`) === 'pago', 'confirmação do pagamento');
+    await p.waitForFunction(() => document.querySelector('#view h1')?.textContent.includes('Obrigada'), null, { timeout: 15000 });
+    expect(!(await p.isVisible('#pay-now')), 'botão de pagar some depois do pagamento');
+    expect(p.errors.length === 0, p.errors.join(' | '));
+    await p.context().close();
   });
 
   console.log('Painel real');
