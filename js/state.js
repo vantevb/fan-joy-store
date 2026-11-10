@@ -213,8 +213,7 @@ function seedOrders() {
   let s = 20260611;
   const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
   const weights = {
-    'caneca-ta-bom': 9, 'caneca-gostoso': 10, 'bottons-dupla': 12, photocards: 7, 'ecobag-boatoat': 5, 'adesivos-boatoat': 8,
-    'banner-oat': 2, 'caneca-mais-um-episodio': 4, 'caderno-diario-dorama': 3, 'marcadores-dorama': 0, 'porta-photocard': 5,
+    'caneca-ta-bom': 12, 'banner-boat': 3, 'caneca-mais-um-episodio': 4, 'caderno-diario-dorama': 3, 'marcadores-dorama': 0, 'porta-photocard': 5,
     'kit-toploader': 1, 'chaveiro-bl': 2, 'planner-bl': 0, 'camiseta-little-joy': 3, 'fan-joy-box': 1, 'ecobag-everyday': 2,
   };
   const pool = PRODUCTS.filter((p) => weights[p.id]);

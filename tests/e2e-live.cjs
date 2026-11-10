@@ -36,8 +36,8 @@ async function livePage(browser) {
 
   console.log('Loja real');
   await step('catálogo vem do banco', async () => {
-    sql("update public.products set price = 44.90 where id = 'caneca-gostoso'");
-    await page.goto(SITE + '/#p-caneca-gostoso');
+    sql("update public.products set price = 44.90 where id = 'caneca-mais-um-episodio'");
+    await page.goto(SITE + '/#p-caneca-mais-um-episodio');
     await page.waitForSelector('#price');
     expect((await page.textContent('#price')).includes('44,90'), 'preço do banco não apareceu');
     expect((await page.textContent('.demo-bar')).includes('fase de testes'), 'faixa do modo real');
@@ -74,7 +74,7 @@ async function livePage(browser) {
   });
 
   await step('cartão no modo real não pede número do cartão', async () => {
-    await page.goto(SITE + '/#p-adesivos-boatoat');
+    await page.goto(SITE + '/#p-marcadores-dorama');
     await page.click('#add');
     await page.goto(SITE + '/#sacola');
     await page.fill('#cep', '01310-100');
@@ -93,14 +93,14 @@ async function livePage(browser) {
   });
 
   await step('estoque insuficiente mostra mensagem clara', async () => {
-    sql("update public.products set stock = 3 where id = 'caneca-gostoso'");
+    sql("update public.products set stock = 3 where id = 'caneca-mais-um-episodio'");
     await page.reload();
-    await page.goto(SITE + '/#p-caneca-gostoso');
+    await page.goto(SITE + '/#p-caneca-mais-um-episodio');
     await page.waitForSelector('#add');
     await page.click('#q-plus');
     await page.click('#add');
     // enquanto isso, outra cliente comprou: sobrou 1
-    sql("update public.products set stock = 1 where id = 'caneca-gostoso'");
+    sql("update public.products set stock = 1 where id = 'caneca-mais-um-episodio'");
     await page.goto(SITE + '/#sacola');
     await page.fill('#cep', '30130000');
     await page.click('#cep-form button');
@@ -161,7 +161,7 @@ async function livePage(browser) {
     await page.click('#login button');
     await page.waitForSelector('.kpis');
     expect((await page.textContent('.kpis')).includes('2'), 'deveria contar 2 pedidos');
-    expect((await page.textContent('.panel-warn')).includes('Caneca “Gostoso!”'), 'alerta de estoque baixo');
+    expect((await page.textContent('.panel-warn')).includes('Só mais um episódio'), 'alerta de estoque baixo');
     expect((await page.textContent('.admin-nav')).includes('Encomendas'), 'menu');
   });
 
@@ -181,12 +181,12 @@ async function livePage(browser) {
 
   await step('ajuste de estoque no painel grava no banco', async () => {
     await page.goto(SITE + '/#painel-produtos');
-    await page.waitForSelector('tr[data-id="bottons-dupla"]');
-    await page.locator('tr[data-id="bottons-dupla"] [data-f="stock"]').fill('7');
-    await page.locator('tr[data-id="bottons-dupla"] [data-f="stock"]').dispatchEvent('change');
-    await page.waitForFunction(() => document.querySelector('tr[data-id="bottons-dupla"] [data-f="stock"]')?.value === '7' && !document.querySelector('tr[data-id="bottons-dupla"] [data-f="stock"]').disabled);
-    expect(sql("select stock from public.products where id = 'bottons-dupla'") === '7', 'estoque no banco');
-    expect(sql("select reason from public.stock_movements where product_id = 'bottons-dupla' order by id desc limit 1") === 'ajuste', 'movimento de ajuste');
+    await page.waitForSelector('tr[data-id="camiseta-little-joy"]');
+    await page.locator('tr[data-id="camiseta-little-joy"] [data-f="stock"]').fill('7');
+    await page.locator('tr[data-id="camiseta-little-joy"] [data-f="stock"]').dispatchEvent('change');
+    await page.waitForFunction(() => document.querySelector('tr[data-id="camiseta-little-joy"] [data-f="stock"]')?.value === '7' && !document.querySelector('tr[data-id="camiseta-little-joy"] [data-f="stock"]').disabled);
+    expect(sql("select stock from public.products where id = 'camiseta-little-joy'") === '7', 'estoque no banco');
+    expect(sql("select reason from public.stock_movements where product_id = 'camiseta-little-joy' order by id desc limit 1") === 'ajuste', 'movimento de ajuste');
   });
 
   await step('relatório e solicitações do banco', async () => {

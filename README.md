@@ -17,7 +17,7 @@ Esta versão é uma **apresentação navegável**. Dá para explorar a loja, mon
 - Nossa história, atendimento, dúvidas frequentes e políticas de entrega, trocas, cancelamento e privacidade
 
 **Coleção conceitual BoatOat FM Brasil 2026**
-Oito produtos criados a partir das artes da Lilian (“Tá bom!” e “Gostoso!”): duas canecas, dupla de bottons, kit de seis photocards, ecobag, cartela de adesivos, banner do Boat “Tá bom” e banner do Oat “Gostoso!”. A página da coleção conta a piada interna “Virou coisa nossa” e deixa claro que não há vínculo oficial com os artistas, a produtora ou o evento.
+Produtos criados a partir da arte “Tá bom!” da Lilian: a caneca “Tá bom!” e o banner do Boat “Tá bom”. A página da coleção conta a piada interna “Virou coisa nossa” e deixa claro que não há vínculo oficial com os artistas, a produtora ou o evento.
 
 **Painel de gestão** (`#painel`)
 - Receita, pedidos, ticket médio e itens vendidos, com filtros por período, categoria e coleção
@@ -71,7 +71,7 @@ Com o servidor rodando, abra http://localhost:8080/instagram/ para montar posts 
 - Escolha um produto do catálogo ou “Produto novo” e ajuste os textos só para aquele post.
 - Dá para trocar a foto e escolher entre preencher a moldura ou mostrar a foto inteira.
 - **Baixar imagem** gera um PNG de 1080 × 1350 (formato retrato 4:5, o que mais aparece no feed).
-- Para abrir já com um produto: `instagram/?produto=caneca-gostoso`.
+- Para abrir já com um produto: `instagram/?produto=caneca-ta-bom`.
 - Versão editável no PowerPoint, Google Slides ou Canva: `instagram/modelo-editavel/` (o .pptx, as fontes da marca e o passo a passo em “COMO USAR.txt”).
 
 ## Testes

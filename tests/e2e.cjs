@@ -27,7 +27,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   console.log('Loja');
   await step('página inicial mostra destaques e coleções', async () => {
     await page.waitForSelector('[data-testid="product-card"]');
-    expect(await page.locator('[data-testid="product-card"]').count() >= 6, 'menos de 6 destaques');
+    expect(await page.locator('[data-testid="product-card"]').count() >= 2, 'menos de 2 destaques (caneca e banner “Tá bom!”)');
     expect(await page.locator('.coll').count() === 5, 'esperava 5 coleções');
   });
 
@@ -35,17 +35,17 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     await page.goto(BASE + '/#loja');
     await page.selectOption('#f-cat', 'canecas');
     const names = await page.locator('.card-title').allTextContents();
-    expect(names.length === 3 && names.every((n) => n.includes('Caneca')), `canecas: ${names}`);
+    expect(names.length === 2 && names.every((n) => n.includes('Caneca')), `canecas: ${names}`);
     await page.selectOption('#f-cat', '');
-    await page.fill('#f-q', 'gostoso');
-    expect(await page.locator('[data-testid="product-card"]').count() >= 2, 'busca por gostoso');
+    await page.fill('#f-q', 'tá bom');
+    expect(await page.locator('[data-testid="product-card"]').count() >= 2, 'busca por tá bom (caneca e banner)');
     await page.fill('#f-q', '');
     await page.selectOption('#f-sort', 'menor');
     const first = await page.locator('.card-price').first().textContent();
     expect(/Grátis/.test(first), `menor preço deveria começar pelos grátis, veio ${first}`);
     await page.check('#f-av-enc');
     const enc = await page.locator('.card-title').allTextContents();
-    expect(enc.length >= 2 && enc.some((n) => n.includes('photocards')), `encomenda: ${enc}`);
+    expect(enc.length >= 2 && enc.some((n) => n.includes('toploaders')), `encomenda: ${enc}`);
   });
 
   await step('página de produto: variação muda o preço e personalização respeita o limite', async () => {
@@ -64,16 +64,16 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   });
 
   await step('sacola: adicionar outro item, alterar quantidade e remover', async () => {
-    await page.goto(BASE + '/#p-bottons-dupla');
+    await page.goto(BASE + '/#p-marcadores-dorama');
     await page.click('#add');
     await page.goto(BASE + '/#sacola');
     await page.waitForSelector('#view [data-testid="cart-line"]');
     expect(await page.locator('#view [data-testid="cart-line"]').count() === 2, '2 linhas');
-    const bottons = page.locator('#view [data-testid="cart-line"]', { hasText: 'bottons' });
-    await bottons.locator('[data-act="inc"]').click();
-    expect((await page.locator('#view [data-testid="cart-line"]', { hasText: 'bottons' }).locator('[data-testid="line-qty"]').textContent()) === '2', 'qtd bottons = 2');
-    await page.locator('#view [data-testid="cart-line"]', { hasText: 'bottons' }).locator('[data-act="rm"]').click();
-    expect(await page.locator('#view [data-testid="cart-line"]').count() === 1, 'removeu bottons');
+    const marcadores = page.locator('#view [data-testid="cart-line"]', { hasText: 'marcadores' });
+    await marcadores.locator('[data-act="inc"]').click();
+    expect((await page.locator('#view [data-testid="cart-line"]', { hasText: 'marcadores' }).locator('[data-testid="line-qty"]').textContent()) === '2', 'qtd marcadores = 2');
+    await page.locator('#view [data-testid="cart-line"]', { hasText: 'marcadores' }).locator('[data-act="rm"]').click();
+    expect(await page.locator('#view [data-testid="cart-line"]').count() === 1, 'removeu marcadores');
     expect((await page.textContent('[data-testid="bag-total"]')).includes('140,00'), 'subtotal 2 × 70,00');
   });
 
@@ -116,7 +116,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   });
 
   await step('checkout com cartão valida número e aprova', async () => {
-    await page.goto(BASE + '/#p-adesivos-boatoat');
+    await page.goto(BASE + '/#p-caderno-diario-dorama');
     await page.click('#add');
     await page.goto(BASE + '/#sacola');
     await page.fill('#cep', '30130-000');
@@ -163,11 +163,11 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     await page.waitForSelector('.kpis');
     expect(await page.locator('.rank').count() >= 3, 'listas de ranking');
     const warn = await page.textContent('.panel-warn');
-    expect(warn.includes('Caneca “Gostoso!”'), 'alerta de estoque baixo da caneca Gostoso');
+    expect(warn.includes('Porta-photocard'), 'alerta de estoque baixo do porta-photocard');
     const stalled = await page.locator('.panel', { hasText: 'Com estoque, sem vendas' }).textContent();
     expect(stalled.includes('marcadores'), 'marcadores sem vendas');
     const bottom = await page.locator('.panel', { hasText: 'Menos vendidos' }).textContent();
-    expect(!bottom.includes('Banner do Oat') && !bottom.includes('photocards'), 'novos e sob encomenda fora de menos vendidos');
+    expect(!bottom.includes('Banner do Boat') && !bottom.includes('toploaders'), 'novos e sob encomenda fora de menos vendidos');
   });
 
   await step('filtro por coleção altera os indicadores', async () => {
@@ -187,20 +187,20 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
 
   await step('editar estoque gera e remove alerta', async () => {
     await page.goto(BASE + '/#painel-produtos');
-    const row = page.locator('tr[data-id="bottons-dupla"]');
+    const row = page.locator('tr[data-id="camiseta-little-joy"]');
     await row.locator('[data-f="stock"]').fill('2');
     await row.locator('[data-f="stock"]').dispatchEvent('change');
     await page.goto(BASE + '/#painel');
-    expect((await page.textContent('.panel-warn')).includes('bottons'), 'bottons com alerta');
+    expect((await page.textContent('.panel-warn')).includes('Camiseta Little Joy'), 'camiseta com alerta');
   });
 
   await step('desativar produto tira ele da loja', async () => {
     await page.goto(BASE + '/#painel-produtos');
-    await page.locator('tr[data-id="banner-oat"] [data-f="active"]').uncheck();
-    await page.goto(BASE + '/#colecao-boatoat');
-    expect(!(await page.textContent('#view')).includes('Banner do Oat'), 'banner sumiu da coleção');
+    await page.locator('tr[data-id="planner-bl"] [data-f="active"]').uncheck();
+    await page.goto(BASE + '/#colecao-bl-diaries');
+    expect(!(await page.textContent('#view')).includes('Planner semanal'), 'planner sumiu da coleção');
     await page.goto(BASE + '/#painel-produtos');
-    await page.locator('tr[data-id="banner-oat"] [data-f="active"]').check();
+    await page.locator('tr[data-id="planner-bl"] [data-f="active"]').check();
   });
 
   await step('relatório mostra receita por produto e exporta CSV', async () => {
@@ -220,7 +220,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR' });
   const m = await mobile.newPage();
   m.setDefaultTimeout(8000);
-  for (const route of ['inicio', 'loja', 'p-caneca-gostoso', 'colecao-boatoat', 'sacola', 'brindes', 'painel']) {
+  for (const route of ['inicio', 'loja', 'p-caneca-ta-bom', 'colecao-boatoat', 'sacola', 'brindes', 'painel']) {
     await step(`sem rolagem lateral em #${route}`, async () => {
       await m.goto(`${BASE}/#${route}`);
       await m.waitForTimeout(300);
@@ -244,7 +244,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     expect((await e.getAttribute('html', 'lang')) === 'en', 'lang="en"');
   });
   await step('produto em inglês: nome, opções e preço', async () => {
-    await e.goto(`${BASE}/#p-caneca-gostoso`);
+    await e.goto(`${BASE}/#p-caneca-ta-bom`);
     await e.waitForSelector('#add');
     expect((await e.textContent('#view h1')).includes('Mug'), 'nome em inglês');
     await e.locator('label.opt', { hasText: 'Magic' }).click();

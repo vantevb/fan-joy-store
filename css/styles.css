@@ -161,6 +161,8 @@ body.is-admin .lang-switch { display: none; }
 .bubble-b { background: #FBDDE1; color: var(--red-ink); }
 .story-quotes .bubble-a { position: absolute; top: 10px; left: 0; transform: rotate(-6deg); }
 .story-quotes .bubble-b { position: absolute; bottom: 20px; right: 0; transform: rotate(5deg); }
+.story-quotes { display: grid; place-items: center; }
+.story-quotes .bubble-a:only-child { position: static; transform: rotate(-4deg); font-size: clamp(2.4rem, 1.6rem + 3vw, 4rem); padding: 0.5em 0.9em; }
 .concept-note { font-size: var(--step--1); color: var(--muted); border-left: 3px solid var(--yellow); padding: 4px 0 4px 12px; margin: 20px 0 0; max-width: 60ch; }
 .section-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px 24px; margin-bottom: 28px; }
 .section-head .h2 { margin: 0; }
@@ -330,7 +332,7 @@ body.is-admin .lang-switch { display: none; }
 .boat-arts figure:nth-child(2) { transform: rotate(1.5deg); border: 3px solid var(--yellow); }
 .boat-arts figure:nth-child(3) { transform: rotate(-1deg); }
 .boat-arts figcaption { color: var(--navy); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 4px 2px; }
-.joke { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; align-items: start; }
+.joke { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: center; max-width: 920px; }
 .joke-step { display: grid; gap: 22px; justify-items: start; }
 .joke-step p { margin: 0; color: var(--muted); }
 .joke-step .bubble { font-size: 2rem; }

@@ -1,7 +1,7 @@
 FAN JOY STORE · POSTS DO INSTAGRAM (arquivo editável)
 
-O arquivo "Fan Joy - Posts Instagram.pptx" tem 5 posts no tamanho do feed (1080 x 1350):
-4 produtos de exemplo e 1 modelo em branco ("Nome do produto").
+O arquivo "Fan Joy - Posts Instagram.pptx" tem 3 posts no tamanho do feed (1080 x 1350):
+2 produtos de exemplo e 1 modelo em branco ("Nome do produto").
 
 1) INSTALE AS FONTES (só uma vez, no computador)
    Abra a pasta "Fontes", dê dois cliques em cada arquivo .ttf e clique em "Instalar".

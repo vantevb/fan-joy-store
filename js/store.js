@@ -64,7 +64,7 @@ function home() {
       </div>
       <figure class="hero-art">
         <div class="hero-frame frame-a"><img src="img/arte-ta-bom.webp" alt="${tr('Arte “Tá bom!” da Lilian aplicada em canecas', 'Lilian’s “Tá bom!” art printed on mugs')}" width="1200" height="800" fetchpriority="high"></div>
-        <div class="hero-frame frame-b"><img src="img/arte-gostoso.webp" alt="${tr('Arte panorâmica “Gostoso!” da Lilian', 'Lilian’s panoramic “Gostoso!” art')}" width="1400" height="599"></div>
+        <div class="hero-frame frame-b"><img src="img/banner-boat.webp" alt="${tr('Banner “A frase favorita do Boat: Tá bom”, arte da Lilian', 'Banner “Boat’s favorite phrase: Tá bom”, art by Lilian')}" width="1400" height="630"></div>
         <figcaption>${tr('Artes da Lilian · coleção conceitual BoatOat FM Brasil 2026', 'Art by Lilian · BoatOat FM Brasil 2026 concept collection')}</figcaption>
       </figure>
     </div>
@@ -84,14 +84,13 @@ function home() {
       <div class="story-copy">
         <p class="eyebrow">${tr('Coleção conceitual · BoatOat FM Brasil 2026', 'Concept collection · BoatOat FM Brasil 2026')}</p>
         <h2 class="h2">${tr('Virou coisa nossa.', 'It became our thing.')}</h2>
-        <p>${tr('No fanmeeting no Brasil, o Boat respondia “Tá bom!” para quase tudo. E toda vez que alguém chamava o Oat de fofo, ele corrigia: “gostoso!”.', 'At the fan meeting in Brazil, Boat answered “Tá bom!” (“Okay!”) to almost everything. And every time someone called Oat cute, he corrected them: “gostoso!” (“hot stuff!”).')}</p>
-        <p>${tr('A Lilian transformou essas lembranças em artes. Delas nasceu uma coleção com canecas, bottons, photocards, ecobag, adesivos e os banners do Boat e do Oat.', 'Lilian turned those memories into art, and the art became a collection: mugs, buttons, photocards, a tote bag, stickers and banners for Boat and Oat.')}</p>
+        <p>${tr('No fanmeeting no Brasil, o Boat respondia “Tá bom!” para quase tudo. Virou a resposta oficial do fandom.', 'At the fan meeting in Brazil, Boat answered “Tá bom!” (“Okay!”) to almost everything. It became the fandom’s official answer.')}</p>
+        <p>${tr('A Lilian transformou essa lembrança em arte. Dela nasceram a caneca e o banner “Tá bom!”.', 'Lilian turned that memory into art, and the art became the “Tá bom!” mug and banner.')}</p>
         <a class="btn btn-primary" href="#colecao-boatoat">${tr('Conhecer a coleção', 'See the collection')} ${icon.arrow}</a>
         ${conceptNote()}
       </div>
       <div class="story-quotes" aria-hidden="true">
         <span class="bubble bubble-a">Tá bom!</span>
-        <span class="bubble bubble-b">Gostoso!</span>
       </div>
     </div>
   </section>
@@ -269,14 +268,13 @@ function collectionPage(id) {
     return `<section class="boat-hero">
       <div class="wrap boat-grid">
         <div>
-          <p class="eyebrow">${tr('Coleção conceitual · 8 produtos', 'Concept collection · 8 products')}</p>
+          <p class="eyebrow">${tr(`Coleção conceitual · ${list.length} ${list.length === 1 ? 'produto' : 'produtos'}`, `Concept collection · ${list.length} ${list.length === 1 ? 'product' : 'products'}`)}</p>
           <h1 class="display">BoatOat FM<br>Brasil 2026</h1>
-          <p class="lead">${tr('As artes da Lilian, dois bordões e uma piada interna que o fandom inteiro entendeu.', 'Lilian’s art, two catchphrases and an inside joke the whole fandom got.')}</p>
+          <p class="lead">${tr('A arte da Lilian, um bordão e uma piada interna que o fandom inteiro entendeu.', 'Lilian’s art, one catchphrase and an inside joke the whole fandom got.')}</p>
           ${conceptNote()}
         </div>
         <div class="boat-arts">
-          <figure><img src="img/arte-ta-bom.webp" alt="${tr('Arte “Tá bom!” da Lilian aplicada em canecas, com as vistas lado esquerdo, meio e lado direito', 'Lilian’s “Tá bom!” art on mugs, shown from the left, middle and right')}" width="1200" height="800"><figcaption>${tr('Arte 1 · “Tá bom!”', 'Art 1 · “Tá bom!”')}</figcaption></figure>
-          <figure><img src="img/arte-gostoso.webp" alt="${tr('Arte panorâmica “Gostoso!” da Lilian com seis personagens entre corações', 'Lilian’s panoramic “Gostoso!” art with six characters among hearts')}" width="1400" height="599"><figcaption>${tr('Arte 2 · “Gostoso!”', 'Art 2 · “Gostoso!”')}</figcaption></figure>
+          <figure><img src="img/arte-ta-bom.webp" alt="${tr('Arte “Tá bom!” da Lilian aplicada em canecas, com as vistas lado esquerdo, meio e lado direito', 'Lilian’s “Tá bom!” art on mugs, shown from the left, middle and right')}" width="1200" height="800"><figcaption>${tr('Arte · “Tá bom!”', 'Art · “Tá bom!”')}</figcaption></figure>
           <figure><img src="img/banner-boat.webp" alt="${tr('Banner “A frase favorita do Boat: Tá bom”, arte da Lilian', 'Banner “Boat’s favorite phrase: Tá bom”, art by Lilian')}" width="1400" height="630"><figcaption>${tr('Banner do Boat · “Tá bom”', 'Boat banner · “Tá bom”')}</figcaption></figure>
         </div>
       </div>
@@ -284,12 +282,11 @@ function collectionPage(id) {
     <section class="section">
       <div class="wrap joke">
         <div class="joke-step"><span class="bubble bubble-a">Tá bom!</span><p>${tr('Durante o fanmeeting no Brasil, o Boat repetia “Tá bom!” a cada pergunta, pedido ou grito da plateia. Virou trilha sonora da noite.', 'During the fan meeting in Brazil, Boat kept saying “Tá bom!” (“Okay!”) to every question, request and scream from the crowd. It became the soundtrack of the night.')}</p></div>
-        <div class="joke-step"><span class="bubble bubble-b">Gostoso!</span><p>${tr('Quando os fãs chamavam o Oat de fofo, ele brincava e se chamava de “gostoso”. A plateia respondeu em coro até o final.', 'When fans called Oat cute, he joked back calling himself “gostoso” (“hot stuff”). The crowd chanted it back until the very end.')}</p></div>
-        <div class="joke-step joke-end"><h2 class="h2">${tr('Virou coisa nossa.', 'It became our thing.')}</h2><p>${tr('A Lilian juntou as duas lembranças em artes para guardar o que o fandom viveu junto. Na arte original, “Te Amo!” deu lugar a “Gostoso!”.', 'Lilian turned both memories into art to keep what the fandom lived together. In the original art, “Te Amo!” (“I love you!”) gave way to “Gostoso!”.')}</p></div>
+        <div class="joke-step joke-end"><h2 class="h2">${tr('Virou coisa nossa.', 'It became our thing.')}</h2><p>${tr('A Lilian transformou a lembrança em arte para guardar o que o fandom viveu junto.', 'Lilian turned the memory into art to keep what the fandom lived together.')}</p></div>
       </div>
     </section>
     <section class="section section-tint"><div class="wrap">
-      <div class="section-head"><div><p class="eyebrow">${tr('A coleção', 'The collection')}</p><h2 class="h2">${tr('Oito jeitos de levar a piada com você.', 'Eight ways to carry the joke with you.')}</h2></div></div>
+      <div class="section-head"><div><p class="eyebrow">${tr('A coleção', 'The collection')}</p><h2 class="h2">${tr('Para levar a piada com você.', 'Carry the joke with you.')}</h2></div></div>
       ${grid(list)}
       ${api.live ? '' : `<p class="fine">${tr('Mockups ilustrativos para apresentação. Materiais, medidas e preços serão confirmados pela Fan Joy Store antes das vendas.', 'Illustrative mockups. Materials, sizes and prices will be confirmed by Fan Joy Store before sales open.')}</p>`}
     </div></section>`;
@@ -309,7 +306,7 @@ function productPage(id) {
   const a = S.availability(p);
   const gallery = [...(p.images || [])];
   if (p.collection === 'boatoat') {
-    for (const art of [{ src: 'img/arte-ta-bom.webp', alt: tr('Arte original “Tá bom!” da Lilian', 'Lilian’s original “Tá bom!” art'), fit: 'contain' }, { src: 'img/arte-gostoso.webp', alt: tr('Arte original “Gostoso!” da Lilian', 'Lilian’s original “Gostoso!” art'), fit: 'contain' }]) {
+    for (const art of [{ src: 'img/arte-ta-bom.webp', alt: tr('Arte original “Tá bom!” da Lilian', 'Lilian’s original “Tá bom!” art'), fit: 'contain' }]) {
       if (!gallery.some((g) => g.src === art.src)) gallery.push(art);
     }
   }
@@ -854,7 +851,7 @@ function story() {
       <p>${tr('A Fan Joy Store nasceu em São Paulo, da criatividade da Lilian e da vontade de transformar o carinho por artistas, séries e doramas em objetos para o dia a dia.', 'Fan Joy Store was born in São Paulo, from Lilian’s creativity and her wish to turn love for artists, series and K-dramas into everyday objects.')}</p>
       <p>${tr('Cada produto começa num desenho dela. A florzinha sorridente da logo resume a ideia: pequenas alegrias que acompanham a rotina, do café da manhã ao show.', 'Every product starts as one of her drawings. The smiling little flower in the logo sums it up: small joys that come along with you, from breakfast to the concert.')}</p>
       <h2 class="h3">${tr('Como nasceu “Virou coisa nossa”', 'How “It became our thing” was born')}</h2>
-      <p>${tr('No fanmeeting no Brasil, o Boat respondia “Tá bom!” para tudo, e o Oat brincava se chamando de “gostoso” quando os fãs o chamavam de fofo. A Lilian guardou essas lembranças em duas artes, que deram origem à coleção conceitual BoatOat FM Brasil 2026.', 'At the fan meeting in Brazil, Boat answered “Tá bom!” (“Okay!”) to everything, and Oat joked calling himself “gostoso” (“hot stuff”) whenever fans called him cute. Lilian kept those memories in two pieces of art, which became the BoatOat FM Brasil 2026 concept collection.')}</p>
+      <p>${tr('No fanmeeting no Brasil, o Boat respondia “Tá bom!” para tudo. A Lilian guardou essa lembrança numa arte, que deu origem à coleção conceitual BoatOat FM Brasil 2026.', 'At the fan meeting in Brazil, Boat answered “Tá bom!” (“Okay!”) to everything. Lilian kept that memory in a piece of art, which became the BoatOat FM Brasil 2026 concept collection.')}</p>
       <p class="fine">${tr('A coleção é uma homenagem de fã, sem vínculo oficial com os artistas, a produtora ou o evento.', 'The collection is a fan tribute, with no official connection to the artists, the producer or the event.')}</p>
       <h2 class="h3">${tr('O que a gente valoriza', 'What we care about')}</h2>
       <ul class="values"><li>${tr('<strong>Arte autoral.</strong> Desenhos próprios, feitos com cuidado e respeito ao fandom.', '<strong>Original art.</strong> Our own drawings, made with care and respect for the fandom.')}</li><li>${tr('<strong>Transparência.</strong> Prazo, disponibilidade e custos claros antes da compra.', '<strong>Transparency.</strong> Clear timing, availability and costs before you buy.')}</li><li>${tr('<strong>Comunidade.</strong> Freebies, encomendas e espaço para ideias dos fãs.', '<strong>Community.</strong> Freebies, custom orders and room for fans’ ideas.')}</li></ul>
