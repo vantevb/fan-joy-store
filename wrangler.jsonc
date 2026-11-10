@@ -1,0 +1,10 @@
+// Publicação da loja na Cloudflare (Workers com arquivos estáticos).
+// A Cloudflare roda "bash tools/publicar.sh" (monta a pasta dist/) e depois "npx wrangler deploy",
+// que envia só o conteúdo de dist/. Os cabeçalhos de segurança vêm do arquivo _headers.
+{
+  "name": "fan-joy-store",
+  "compatibility_date": "2025-06-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}

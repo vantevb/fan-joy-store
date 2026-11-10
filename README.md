@@ -100,7 +100,8 @@ fan-joy-store/
   instagram/          base de posts do Instagram (fontes Gloock e Figtree, licença OFL; html-to-image 1.11.11, licença MIT)
   supabase/           migração do banco, catálogo inicial (seed) e testes do banco
   tools/              gerador do seed, scripts de teste e publicar.sh (monta a pasta dist/ que vai para o ar)
-  _headers            cabeçalhos de segurança usados pela Cloudflare Pages
+  _headers            cabeçalhos de segurança usados pela Cloudflare
+  wrangler.jsonc      configuração da publicação na Cloudflare (envia só a pasta dist/)
   tests/              testes de ponta a ponta (demonstração e loja real)
   docs/               back-end, guia de uso, escopo e checklist de abertura
 ```
