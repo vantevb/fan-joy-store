@@ -1,0 +1,8 @@
+{
+  "name": "fan-joy-store",
+  "private": true,
+  "description": "Loja virtual da Fan Joy Store. Site estático; este arquivo só fixa a versão do wrangler usada pela Cloudflare para publicar.",
+  "devDependencies": {
+    "wrangler": "4.160.0"
+  }
+}
