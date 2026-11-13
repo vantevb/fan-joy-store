@@ -141,6 +141,15 @@ async function livePage(browser, { online = false } = {}) {
   });
 
   console.log('Pagamento on-line');
+  await step('com ?pagamento=teste, a faixa avisa que o modo de teste está ligado só naquela aba', async () => {
+    const p = await livePage(browser);
+    await p.goto(SITE + '/?pagamento=teste#loja');
+    expect((await p.textContent('.demo-bar')).includes('MODO DE TESTE'), 'faixa do modo de teste');
+    const other = await p.context().newPage();
+    await other.goto(SITE + '/#loja');
+    expect(!(await other.textContent('.demo-bar')).includes('MODO DE TESTE'), 'outra aba continua normal');
+    await p.context().close();
+  });
   await step('com o pagamento ligado, o checkout leva ao Mercado Pago e a volta mostra o pedido pago', async () => {
     const p = await livePage(browser, { online: true });
     let sent = null;

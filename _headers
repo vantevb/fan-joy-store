@@ -1,7 +1,18 @@
-# Cabeçalhos de segurança da loja (Cloudflare Pages).
+# Cabeçalhos da loja (Cloudflare).
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Strict-Transport-Security: max-age=31536000
+
+# Página, scripts e estilos: o navegador sempre confere se há versão nova antes de usar a guardada.
+# Sem isso, quem já visitou a loja pode continuar vendo uma versão antiga depois de uma atualização.
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/js/*
+  Cache-Control: no-cache
+/css/*
+  Cache-Control: no-cache

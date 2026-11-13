@@ -18,7 +18,8 @@ function paymentTestMode() {
     return sessionStorage.getItem('fjs:pagamento-teste') === '1';
   } catch { return false; }
 }
-export const onlinePayment = live && (PAGAMENTO_ONLINE === true || paymentTestMode());
+export const paymentTest = live && PAGAMENTO_ONLINE !== true && paymentTestMode();
+export const onlinePayment = live && (PAGAMENTO_ONLINE === true || paymentTest);
 const DEMO_AUTH = 'fjs:v1:admin';
 const MY_ORDERS = 'fjs:v1:myOrders';
 
