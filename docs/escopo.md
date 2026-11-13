@@ -23,7 +23,7 @@ O projeto tem duas partes com contratação separada:
 - História da marca, atendimento, dúvidas frequentes e políticas de entrega, troca, cancelamento e privacidade
 
 ### Coleção conceitual BoatOat FM Brasil 2026
-- Caneca “Tá bom!” e banner do Boat “Tá bom” (os demais produtos da coleção foram retirados em 10/11/2026)
+- Caneca “Tá bom!” (os demais produtos da coleção foram retirados em 10/11 e 13/11/2026)
 - Página com a história “Virou coisa nossa”
 - Produtos, materiais e preços identificados como ilustrativos, sem sugerir parceria oficial com os artistas, a produtora ou o evento
 

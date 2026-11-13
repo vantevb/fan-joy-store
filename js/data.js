@@ -12,7 +12,6 @@ export const CATEGORIES = [
   { id: 'canecas', name: 'Canecas', en: { name: 'Mugs' } },
   { id: 'camisetas', name: 'Camisetas', en: { name: 'T-shirts' } },
   { id: 'photocards', name: 'Photocards', en: { name: 'Photocards' } },
-  { id: 'banners', name: 'Banners', en: { name: 'Banners' } },
   { id: 'papelaria', name: 'Papelaria', en: { name: 'Stationery' } },
   { id: 'acessorios', name: 'Acessórios', en: { name: 'Accessories' } },
   { id: 'presentes', name: 'Presentes', en: { name: 'Gifts' } },
@@ -85,16 +84,6 @@ export const PRODUCTS = [
     personalization: { label: 'Nome na alça', max: 12, placeholder: 'Ex.: Lilian' },
   },
 
-  {
-    id: 'banner-boat', name: 'Banner do Boat “Tá bom!”', category: 'banners', collection: 'boatoat',
-    en: { name: 'Boat “Tá bom!” Banner', short: 'Boat’s favorite phrase in big letters, for the concert.', description: 'Panoramic banner with six versions of Boat and “Tá bom” front and center. It pairs with the “Tá bom!” mug.', details: ['Matte canvas with rod and cord', 'Light enough to hold with one hand', BOAT_NOTE_EN], variations: [{ name: 'Size', options: ['60 × 27 cm', '90 × 40 cm'] }], alts: ['Lilian’s panoramic banner with six versions of Boat holding a microphone, “Tá bom” speech bubbles and the sign “Boat’s favorite phrase: Tá bom”'] },
-    price: 29.9, stock: 6, lowStock: 3, mode: 'pronta', productionDays: 2, createdDaysAgo: 3, featured: true,
-    images: [{ src: 'img/banner-boat.webp', alt: 'Banner panorâmico da Lilian com seis versões do Boat segurando microfone, balões “Tá bom” e o letreiro “A frase favorita do Boat: Tá bom”', fit: 'contain' }],
-    short: 'A frase favorita do Boat em letras grandes, para o show.',
-    description: 'Banner panorâmico com seis versões do Boat e o “Tá bom” em destaque. Faz par com a caneca “Tá bom!”.',
-    details: ['Lona fosca com bastão e cordão', 'Leve para segurar com uma mão', BOAT_NOTE],
-    variations: [{ name: 'Tamanho', options: [{ label: '60 × 27 cm', add: 0 }, { label: '90 × 40 cm', add: 15 }] }],
-  },
 
   // Demais coleções: modelos demonstrativos desenhados pela VB Studio até a Lilian enviar as artes definitivas.
   {

@@ -17,7 +17,7 @@ Esta versão é uma **apresentação navegável**. Dá para explorar a loja, mon
 - Nossa história, atendimento, dúvidas frequentes e políticas de entrega, trocas, cancelamento e privacidade
 
 **Coleção conceitual BoatOat FM Brasil 2026**
-Produtos criados a partir da arte “Tá bom!” da Lilian: a caneca “Tá bom!” e o banner do Boat “Tá bom”. A página da coleção conta a piada interna “Virou coisa nossa” e deixa claro que não há vínculo oficial com os artistas, a produtora ou o evento.
+Produto criado a partir da arte “Tá bom!” da Lilian: a caneca “Tá bom!”. A página da coleção conta a piada interna “Virou coisa nossa” e deixa claro que não há vínculo oficial com os artistas, a produtora ou o evento.
 
 **Painel de gestão** (`#gestao`)
 - Receita, pedidos, ticket médio e itens vendidos, com filtros por período, categoria e coleção
@@ -54,6 +54,12 @@ python3 -m http.server 8080
 Depois abra http://localhost:8080.
 
 Os dados da demonstração (sacola, pedidos, ajustes do painel) ficam no `localStorage` do navegador. O botão “Restaurar dados de exemplo”, no painel, volta tudo ao estado inicial.
+
+## Proteção das artes
+
+- O rodapé de todas as páginas e as políticas (seção **Propriedade intelectual**) avisam que as artes são protegidas pela Lei de Direitos Autorais e que é proibido copiar ou usar sem autorização.
+- As imagens das artes publicadas no site têm **marca d'água** (“© FAN JOY STORE” em diagonal e o endereço da loja no canto). Para uma foto nova, aplique a marca a partir do arquivo original, que **não** deve ir para o repositório: `node tools/marca-dagua.cjs original.png img/nome.webp`.
+- O site bloqueia o botão direito e o arrastar nas imagens. Isso só dificulta: um print continua possível, por isso a marca d'água é a proteção principal.
 
 ## Versão em inglês
 

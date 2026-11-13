@@ -27,7 +27,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   console.log('Loja');
   await step('página inicial mostra destaques e coleções', async () => {
     await page.waitForSelector('[data-testid="product-card"]');
-    expect(await page.locator('[data-testid="product-card"]').count() >= 2, 'menos de 2 destaques (caneca e banner “Tá bom!”)');
+    expect(await page.locator('[data-testid="product-card"]').count() >= 2, 'menos de 2 destaques');
     expect(await page.locator('.coll').count() === 5, 'esperava 5 coleções');
   });
 
@@ -38,7 +38,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     expect(names.length === 2 && names.every((n) => n.includes('Caneca')), `canecas: ${names}`);
     await page.selectOption('#f-cat', '');
     await page.fill('#f-q', 'tá bom');
-    expect(await page.locator('[data-testid="product-card"]').count() >= 2, 'busca por tá bom (caneca e banner)');
+    expect(await page.locator('[data-testid="product-card"]').count() >= 1, 'busca por tá bom (caneca)');
     await page.fill('#f-q', '');
     await page.selectOption('#f-sort', 'menor');
     const first = await page.locator('.card-price').first().textContent();
@@ -167,7 +167,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     const stalled = await page.locator('.panel', { hasText: 'Com estoque, sem vendas' }).textContent();
     expect(stalled.includes('marcadores'), 'marcadores sem vendas');
     const bottom = await page.locator('.panel', { hasText: 'Menos vendidos' }).textContent();
-    expect(!bottom.includes('Banner do Boat') && !bottom.includes('toploaders'), 'novos e sob encomenda fora de menos vendidos');
+    expect(!bottom.includes('toploaders'), 'novos e sob encomenda fora de menos vendidos');
   });
 
   await step('filtro por coleção altera os indicadores', async () => {

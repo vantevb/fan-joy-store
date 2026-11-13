@@ -65,6 +65,9 @@ function footer() {
       <p>${api.live ? '' : tr('Apresentação demonstrativa. ', 'Demo shop. ')}${tr('A coleção BoatOat FM Brasil 2026 é conceitual e não tem vínculo oficial com os artistas, a produtora ou o evento.', 'The BoatOat FM Brasil 2026 collection is a concept collection with no official connection to the artists, the producer or the event.')}</p>
       <p>${tr('Criação e desenvolvimento', 'Design and development')}: <strong>VB Studio — Victoria Bellisario</strong></p>
     </div>
+    <div class="wrap footer-ip">
+      <p>© ${new Date().getFullYear()} Fan Joy Store. ${tr('Todas as artes, ilustrações, fotos e textos deste site são de autoria da Fan Joy Store e protegidos pela Lei de Direitos Autorais (Lei nº 9.610/1998). É proibido copiar, reproduzir, imprimir, vender ou usar as nossas artes, no todo ou em parte, sem autorização por escrito.', 'All artwork, illustrations, photos and text on this site are created by Fan Joy Store and protected by Brazilian copyright law (Law 9,610/1998). Copying, reproducing, printing, selling or using our art, in whole or in part, without written permission is prohibited.')} <a href="#politicas">${tr('Saiba mais', 'Learn more')}</a></p>
+    </div>
   </footer>`;
 }
 
@@ -196,6 +199,9 @@ document.getElementById('drawer').addEventListener('click', (e) => { if (e.targe
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
 S.subscribe(() => { updateCount(); if (!document.getElementById('drawer').hidden) renderDrawer(); });
 window.addEventListener('hashchange', navigate);
+// As artes são da loja: bloqueia o menu do botão direito e o arrastar das imagens.
+document.addEventListener('contextmenu', (e) => { if (e.target.closest('img, svg.art, .card-media, .pdp-main, .hero-art, .boat-arts')) e.preventDefault(); });
+document.addEventListener('dragstart', (e) => { if (e.target.closest('img')) e.preventDefault(); });
 // Troca de idioma: refaz cabeçalho, rodapé e a página atual, sem sair dela.
 window.addEventListener('langchange', () => {
   const y = window.scrollY;

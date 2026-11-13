@@ -26,7 +26,7 @@ grant execute on all functions in schema tests to anon, authenticated, service_r
 insert into auth.users values ('00000000-0000-0000-0000-00000000000a', 'lilian@fanjoy.test'), ('00000000-0000-0000-0000-00000000000b', 'cliente@fanjoy.test');
 insert into public.staff values ('00000000-0000-0000-0000-00000000000a', 'Lilian', 'dona');
 -- Produtos "antigos" para os indicadores (o seed cria tudo como novo)
-update public.products set created_at = now() - interval '120 days' where id not in ('banner-boat', 'kit-toploader');
+update public.products set created_at = now() - interval '120 days' where id not in ('kit-toploader');
 
 -- ================= Visitante (anon) =================
 set role anon;
@@ -36,20 +36,20 @@ select tests.fails('select * from public.orders', 'permission denied', 'anon nã
 select tests.fails('select * from public.products', 'permission denied', 'anon não lê a tabela de produtos direto');
 select tests.fails('update public.products set price = 1', 'permission denied', 'anon não altera produtos');
 select tests.fails('select public.admin_orders()', 'permission denied', 'anon não executa funções do painel');
-select tests.ok(jsonb_array_length(public.catalog()->'products') = 15, 'catálogo público tem os 15 produtos');
+select tests.ok(jsonb_array_length(public.catalog()->'products') = 14, 'catálogo público tem os 14 produtos');
 select tests.ok(not (public.catalog()->'products'->0 ? 'weightG'), 'catálogo não expõe peso e medidas');
 select tests.ok((select p->'en'->>'name' from jsonb_array_elements(public.catalog()->'products') p where p->>'id' = 'caneca-ta-bom') = '“Tá bom!” Mug', 'catálogo traz os textos em inglês');
 select tests.ok((select jsonb_array_length(p->'en'->'variations'->0->'options') = jsonb_array_length(p->'variations'->0->'options') from jsonb_array_elements(public.catalog()->'products') p where p->>'id' = 'caneca-ta-bom'), 'opções em inglês casam com as em português');
 
--- Pedido válido: 2 canecas Mágica com nome + 1 banner do Boat 90 × 40 cm, Pix, SEDEX para BH
+-- Pedido válido: 2 canecas Mágica com nome + 1 camiseta M off-white, Pix, SEDEX para BH
 select set_config('t.o1', (public.place_order(
   '{"name":"Ana Teste","email":"Ana@Exemplo.com","phone":"11999990000"}',
   '{"street":"Rua A","number":"10","city":"Belo Horizonte, MG"}',
   '[{"id":"caneca-ta-bom","qty":2,"options":{"Modelo":"Mágica (revela a arte com calor)"},"personalization":"Lilian","unit":0.01},
-    {"id":"banner-boat","qty":1,"options":{"Tamanho":"90 × 40 cm"}}]',
+    {"id":"camiseta-little-joy","qty":1,"options":{"Tamanho":"M","Cor":"Off-white"}}]',
   '{"cep":"30130-000","service":"sedex"}',
   '{"method":"pix"}'))::text, false);
-select tests.ok((current_setting('t.o1')::jsonb->>'total')::numeric = (70.00*2 + 44.90) - 9.25 + (round(21 * 1.3 * 1.7, 1) - 0.1),
+select tests.ok((current_setting('t.o1')::jsonb->>'total')::numeric = (70.00*2 + 79.90) - 11.00 + (round(21 * 1.3 * 1.7, 1) - 0.1),
   'total recalculado no servidor (variações, desconto Pix, frete)', current_setting('t.o1'));
 
 select tests.fails($$select public.place_order('{"name":"A","email":"a@b.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"caneca-ta-bom","qty":1,"options":{"Modelo":"Ouro"}}]','{"cep":"30130000","service":"pac"}','{"method":"pix"}')$$, 'variacao_invalida', 'variação inexistente é recusada');
@@ -110,7 +110,7 @@ select tests.ok(public.admin_create_product('{"name":"Caneca Fighting","category
 
 select set_config('t.dash', public.admin_dashboard(30, '', '')::text, false);
 select tests.ok((current_setting('t.dash')::jsonb->>'orderCount')::int = 1, 'indicadores ignoram pedido cancelado', current_setting('t.dash')::jsonb->>'orderCount');
-select tests.ok((select r->>'kind' from jsonb_array_elements(current_setting('t.dash')::jsonb->'rows') r where r->>'id' = 'banner-boat') = 'novo', 'banner do Boat aparece como novo');
+select tests.ok((select r->>'kind' from jsonb_array_elements(current_setting('t.dash')::jsonb->'rows') r where r->>'id' = 'kit-toploader') = 'novo', 'kit de toploaders aparece como novo');
 select tests.ok((select r->>'kind' from jsonb_array_elements(current_setting('t.dash')::jsonb->'rows') r where r->>'id' = 'kit-toploader') = 'indisponivel' is false, 'kit de toploaders não é indisponível');
 select tests.ok((select r->>'kind' from jsonb_array_elements(current_setting('t.dash')::jsonb->'rows') r where r->>'id' = 'chaveiro-bl') = 'encomenda', 'sob encomenda identificado');
 select tests.ok((select r->>'kind' from jsonb_array_elements(current_setting('t.dash')::jsonb->'rows') r where r->>'id' = 'ecobag-everyday') = 'indisponivel', 'inativo identificado');

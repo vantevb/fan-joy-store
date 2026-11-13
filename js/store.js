@@ -65,7 +65,6 @@ function home() {
       </div>
       <figure class="hero-art">
         <div class="hero-frame frame-a"><img src="img/arte-ta-bom.webp" alt="${tr('Arte “Tá bom!” da Lilian aplicada em canecas', 'Lilian’s “Tá bom!” art printed on mugs')}" width="1200" height="800" fetchpriority="high"></div>
-        <div class="hero-frame frame-b"><img src="img/banner-boat.webp" alt="${tr('Banner “A frase favorita do Boat: Tá bom”, arte da Lilian', 'Banner “Boat’s favorite phrase: Tá bom”, art by Lilian')}" width="1400" height="630"></div>
         <figcaption>${tr('Artes da Lilian · coleção conceitual BoatOat FM Brasil 2026', 'Art by Lilian · BoatOat FM Brasil 2026 concept collection')}</figcaption>
       </figure>
     </div>
@@ -86,7 +85,7 @@ function home() {
         <p class="eyebrow">${tr('Coleção conceitual · BoatOat FM Brasil 2026', 'Concept collection · BoatOat FM Brasil 2026')}</p>
         <h2 class="h2">${tr('Virou coisa nossa.', 'It became our thing.')}</h2>
         <p>${tr('No fanmeeting no Brasil, o Boat respondia “Tá bom!” para quase tudo. Virou a resposta oficial do fandom.', 'At the fan meeting in Brazil, Boat answered “Tá bom!” (“Okay!”) to almost everything. It became the fandom’s official answer.')}</p>
-        <p>${tr('A Lilian transformou essa lembrança em arte. Dela nasceram a caneca e o banner “Tá bom!”.', 'Lilian turned that memory into art, and the art became the “Tá bom!” mug and banner.')}</p>
+        <p>${tr('A Lilian transformou essa lembrança em arte. Dela nasceu a caneca “Tá bom!”.', 'Lilian turned that memory into art, and the art became the “Tá bom!” mug.')}</p>
         <a class="btn btn-primary" href="#colecao-boatoat">${tr('Conhecer a coleção', 'See the collection')} ${icon.arrow}</a>
         ${conceptNote()}
       </div>
@@ -276,7 +275,6 @@ function collectionPage(id) {
         </div>
         <div class="boat-arts">
           <figure><img src="img/arte-ta-bom.webp" alt="${tr('Arte “Tá bom!” da Lilian aplicada em canecas, com as vistas lado esquerdo, meio e lado direito', 'Lilian’s “Tá bom!” art on mugs, shown from the left, middle and right')}" width="1200" height="800"><figcaption>${tr('Arte · “Tá bom!”', 'Art · “Tá bom!”')}</figcaption></figure>
-          <figure><img src="img/banner-boat.webp" alt="${tr('Banner “A frase favorita do Boat: Tá bom”, arte da Lilian', 'Banner “Boat’s favorite phrase: Tá bom”, art by Lilian')}" width="1400" height="630"><figcaption>${tr('Banner do Boat · “Tá bom”', 'Boat banner · “Tá bom”')}</figcaption></figure>
         </div>
       </div>
     </section>
@@ -927,6 +925,12 @@ const POLICIES = [
   { id: 'cancelamento', title: ['Cancelamento', 'Cancellation'], body: [
     ['Pedidos podem ser cancelados sem custo até o início da produção. O status aparece em “Meus pedidos”.', 'Orders can be cancelled at no cost until production starts. You can see the status under “My orders”.'],
     ['O reembolso é feito pelo mesmo meio de pagamento: Pix em até 5 dias úteis e estorno no cartão conforme a operadora.', 'Refunds go back to the original payment method: Pix within 5 business days, and card refunds according to your card issuer.'],
+  ] },
+  { id: 'propriedade', title: ['Propriedade intelectual', 'Intellectual property'], body: [
+    ['Todas as artes, ilustrações, fotos, textos e a marca Fan Joy Store são de autoria e propriedade da Fan Joy Store e protegidos pela Lei de Direitos Autorais (Lei nº 9.610/1998).', 'All artwork, illustrations, photos, text and the Fan Joy Store brand are created and owned by Fan Joy Store and protected by Brazilian copyright law (Law 9,610/1998).'],
+    ['É proibido copiar, baixar, reproduzir, imprimir, estampar, vender ou usar as nossas artes, no todo ou em parte, inclusive para uso pessoal em produtos, sem autorização por escrito da Fan Joy Store.', 'Copying, downloading, reproducing, printing, applying to products, selling or using our art, in whole or in part, including for personal use on products, is prohibited without written permission from Fan Joy Store.'],
+    ['Comprar um produto dá direito ao produto, e não à arte: ela não pode ser reproduzida em outros produtos.', 'Buying a product gives you the product, not the artwork: the art may not be reproduced on other products.'],
+    ['Viu uma arte nossa sendo usada sem autorização? Avise a gente pelo atendimento.', 'Seen our art used without permission? Please let us know through our contact page.'],
   ] },
   { id: 'privacidade', title: ['Privacidade', 'Privacy'], body: [
     ['Usamos seus dados apenas para processar pedidos, entregar produtos e responder atendimentos, conforme a Lei Geral de Proteção de Dados (LGPD).', 'We only use your data to process orders, deliver products and answer your messages, in line with Brazil’s General Data Protection Law (LGPD).'],
