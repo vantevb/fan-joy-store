@@ -1,4 +1,4 @@
-// Painel de gestão da Lilian: visão geral, pedidos, produtos e estoque, solicitações, relatórios
+// Painel de gestão da loja (acesso restrito à equipe): visão geral, pedidos, produtos e estoque, solicitações, relatórios
 // e a apresentação do sistema personalizado opcional.
 import * as S from './state.js';
 import * as api from './api.js';
@@ -23,6 +23,12 @@ const KIND = {
 const kindChip = (k) => `<span class="kchip ${KIND[k].cls}">${KIND[k].label}</span>`;
 
 const period = { days: 30, category: '', collection: '' };
+let staffName = '';
+function greeting() {
+  const h = new Date().getHours();
+  const hi = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  return esc(staffName ? `${hi}, ${staffName.split(' ')[0]}.` : `${hi}.`);
+}
 
 let counts = { pending: 0, newReq: 0 };
 let countsLoaded = false;
@@ -36,8 +42,8 @@ function updateNavCounts(root) {
     if (!b) { b = document.createElement('b'); b.className = 'count'; a.append(' ', b); }
     b.textContent = n;
   };
-  set('painel-pedidos', counts.pending);
-  set('painel-solicitacoes', counts.newReq);
+  set('gestao-pedidos', counts.pending);
+  set('gestao-solicitacoes', counts.newReq);
 }
 async function refreshCounts() {
   const [orders, reqs] = await Promise.all([api.admin.orders(), api.admin.requests()]);
@@ -46,15 +52,15 @@ async function refreshCounts() {
 }
 function shell(active, content) {
   const nav = [
-    ['painel', 'Visão geral'], ['painel-pedidos', 'Pedidos'], ['painel-produtos', 'Produtos e estoque'],
-    ['painel-solicitacoes', 'Encomendas e orçamentos'], ['painel-relatorios', 'Relatórios'], ['sistema-opcional', 'Sistema opcional'],
+    ['gestao', 'Visão geral'], ['gestao-pedidos', 'Pedidos'], ['gestao-produtos', 'Produtos e estoque'],
+    ['gestao-solicitacoes', 'Encomendas e orçamentos'], ['gestao-relatorios', 'Relatórios'], ['gestao-sistema', 'Sistema opcional'],
   ];
   const { pending, newReq } = counts;
   return `<section class="admin">
     <div class="wrap admin-grid">
       <aside class="admin-nav" aria-label="Menu do painel">
         <p class="admin-brand">Fan Joy · Gestão</p>
-        ${nav.map(([id, label]) => `<a href="#${id}" class="${active === id ? 'is-on' : ''}" ${active === id ? 'aria-current="page"' : ''}>${label}${id === 'painel-pedidos' && pending ? ` <b class="count">${pending}</b>` : ''}${id === 'painel-solicitacoes' && newReq ? ` <b class="count">${newReq}</b>` : ''}</a>`).join('')}
+        ${nav.map(([id, label]) => `<a href="#${id}" class="${active === id ? 'is-on' : ''}" ${active === id ? 'aria-current="page"' : ''}>${label}${id === 'gestao-pedidos' && pending ? ` <b class="count">${pending}</b>` : ''}${id === 'gestao-solicitacoes' && newReq ? ` <b class="count">${newReq}</b>` : ''}</a>`).join('')}
         <div class="admin-nav-foot">
           ${api.admin.canReset ? '<p class="fine">Dados de exemplo salvos só neste navegador.</p><button type="button" class="link-btn" id="adm-reset">Restaurar dados de exemplo</button>' : ''}
           <button type="button" class="link-btn" id="adm-out">Sair do painel</button>
@@ -79,7 +85,7 @@ function login(next) {
   const demo = !api.live;
   return {
     html: `<section class="section page-top"><div class="wrap narrow-wrap login">
-      <p class="eyebrow">Painel de gestão</p><h1 class="h1">Área da Lilian</h1>
+      <p class="eyebrow">Fan Joy Store · Gestão</p><h1 class="h1">Acesso da equipe</h1>
       ${demo ? '<p>Na loja definitiva, o painel tem login com e-mail e senha, e cada pessoa da equipe recebe só as permissões de que precisa.</p>' : '<p>Entre com o e-mail e a senha da sua conta da loja.</p>'}
       <form id="login" class="lookup" novalidate>
         <label class="field" for="lg-email"><span>E-mail</span><input id="lg-email" type="email" autocomplete="username" ${demo ? 'value="lilian@fanjoy.demo" readonly' : 'required'}></label>
@@ -148,7 +154,7 @@ function rowItem(r, metric) {
 
 function overview() {
   return {
-    html: shell('painel', '<div id="ov"></div>'),
+    html: shell('gestao', '<div id="ov"></div>'),
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#ov');
@@ -156,7 +162,7 @@ function overview() {
         const [a, orders] = await Promise.all([api.admin.dashboard(period), api.admin.orders()]);
         const action = orders.filter((o) => ['aguardando', 'pago', 'producao'].includes(o.status));
         box.innerHTML = `
-          <div class="admin-head"><div><p class="eyebrow">Visão geral</p><h1 class="h2">Bom dia, Lilian.</h1></div>${periodBar()}</div>
+          <div class="admin-head"><div><p class="eyebrow">Visão geral</p><h1 class="h2">${greeting()}</h1></div>${periodBar()}</div>
           <div class="kpis">
             <div class="kpi"><span>Receita de produtos</span><strong>${brl(a.revenue)}</strong></div>
             <div class="kpi"><span>Pedidos</span><strong>${a.orderCount}</strong></div>
@@ -172,12 +178,12 @@ function overview() {
               ${a.bottom.length ? `<ol class="rank">${a.bottom.map((r) => rowItem(r, `${r.qty} un · ${r.perWeek.toLocaleString('pt-BR')} por semana`)).join('')}</ol>` : '<p class="muted">Nenhum produto comparável nesse filtro.</p>'}</div>
             <div class="panel panel-warn"><h2 class="h3">Estoque baixo</h2>
               ${a.lowStock.length ? `<ul class="rank">${a.lowStock.map((p) => `<li><span class="ri-media">${productMedia(p)}</span><span class="ri-name">${esc(p.name)}<small>mínimo: ${p.lowStock} un</small></span><span class="ri-val"><b class="stock-low">${p.stock} un</b></span></li>`).join('')}</ul>` : '<p class="muted">Tudo certo com o estoque.</p>'}
-              <a class="link" href="#painel-produtos">Repor estoque</a></div>
+              <a class="link" href="#gestao-produtos">Repor estoque</a></div>
             <div class="panel"><h2 class="h3">Com estoque, sem vendas no período</h2>
               ${a.stalled.length ? `<ul class="rank">${a.stalled.map((r) => rowItem(r, `${r.p.stock} un paradas`)).join('')}</ul><p class="fine">Ideias: destaque na página inicial, kit com produto que vende bem ou post no Instagram.</p>` : '<p class="muted">Todos os produtos com estoque tiveram vendas no período.</p>'}</div>
           </div>
-          <div class="panel"><div class="panel-head"><h2 class="h3">Pedidos que precisam de você</h2><a class="link" href="#painel-pedidos">Ver todos</a></div>
-            ${action.length ? `<ul class="order-list">${action.slice(0, 6).map((o) => `<li><a href="#painel-pedidos"><strong>${o.code}</strong><span>${esc(o.customer.name)}</span><span class="pill pill-${o.status}">${esc(S.statusLabel(o.status))}</span><span>${brl(o.total)}</span></a></li>`).join('')}</ul>` : '<p class="muted">Nenhum pedido pendente.</p>'}</div>
+          <div class="panel"><div class="panel-head"><h2 class="h3">Pedidos que precisam de você</h2><a class="link" href="#gestao-pedidos">Ver todos</a></div>
+            ${action.length ? `<ul class="order-list">${action.slice(0, 6).map((o) => `<li><a href="#gestao-pedidos"><strong>${o.code}</strong><span>${esc(o.customer.name)}</span><span class="pill pill-${o.status}">${esc(S.statusLabel(o.status))}</span><span>${brl(o.total)}</span></a></li>`).join('')}</ul>` : '<p class="muted">Nenhum pedido pendente.</p>'}</div>
           <p class="legend-kinds">${Object.keys(KIND).map(kindChip).join('')}</p>`;
         bindPeriod(box, render);
       });
@@ -189,7 +195,7 @@ function overview() {
 const orderFilter = { status: '', q: '' };
 function ordersAdmin() {
   return {
-    html: shell('painel-pedidos', '<div id="po"></div>'),
+    html: shell('gestao-pedidos', '<div id="po"></div>'),
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#po');
@@ -242,7 +248,7 @@ function englishTexts(name, desc, pz) {
 
 function productsAdmin() {
   return {
-    html: shell('painel-produtos', '<div id="pp"></div>'),
+    html: shell('gestao-produtos', '<div id="pp"></div>'),
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#pp');
@@ -318,7 +324,7 @@ function productsAdmin() {
 
 function requestsAdmin() {
   return {
-    html: shell('painel-solicitacoes', '<div id="pr"></div>'),
+    html: shell('gestao-solicitacoes', '<div id="pr"></div>'),
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#pr');
@@ -356,7 +362,7 @@ function toCSV(a) {
 const reportSort = { key: 'qty', dir: -1 };
 function reports() {
   return {
-    html: shell('painel-relatorios', '<div id="rp"></div>'),
+    html: shell('gestao-relatorios', '<div id="rp"></div>'),
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#rp');
@@ -426,7 +432,7 @@ function optionalSystem() {
     ['Relatórios e acessos', 'Relatórios de gestão e perfis de acesso para quem ajudar no dia a dia.'],
   ];
   return {
-    html: shell('sistema-opcional', `
+    html: shell('gestao-sistema', `
       <div class="admin-head"><div><p class="eyebrow">Proposta separada · opcional</p><h1 class="h2">Sistema de gestão integrado</h1></div></div>
       <div class="panel panel-note">
         <p><strong>A loja funciona completa sem este sistema.</strong> Ele é uma contratação à parte, com escopo, custos e contrato próprios. A Lilian pode decidir depois da abertura da loja, ou não contratar.</p>
@@ -445,7 +451,7 @@ function optionalSystem() {
   };
 }
 
-const VIEWS = { painel: overview, 'painel-pedidos': ordersAdmin, 'painel-produtos': productsAdmin, 'painel-solicitacoes': requestsAdmin, 'painel-relatorios': reports, 'sistema-opcional': optionalSystem };
+const VIEWS = { gestao: overview, 'gestao-pedidos': ordersAdmin, 'gestao-produtos': productsAdmin, 'gestao-solicitacoes': requestsAdmin, 'gestao-relatorios': reports, 'gestao-sistema': optionalSystem };
 
 // Toda página do painel passa por aqui: confere a sessão, mostra o login se precisar e carrega os contadores do menu.
 export function adminRoute(route) {
@@ -456,8 +462,9 @@ export function adminRoute(route) {
       const show = async () => {
         let prof = null;
         try { prof = await api.admin.session(); } catch { prof = null; }
-        if (location.hash.slice(1) !== route && !(route === 'painel' && !location.hash)) return;
+        if (location.hash.slice(1) !== route && !(route === 'gestao' && !location.hash)) return;
         if (!prof) { const l = login(show); root.innerHTML = l.html; l.mount(root); return; }
+        staffName = prof.name || '';
         // Na primeira abertura espera os contadores do menu; nas trocas de aba usa os últimos
         // e atualiza em segundo plano, para a aba não esperar duas consultas seguidas.
         if (!countsLoaded) { try { await refreshCounts(); countsLoaded = true; } catch { /* o menu fica sem contadores */ } }

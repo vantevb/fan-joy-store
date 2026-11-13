@@ -19,7 +19,7 @@ Esta versão é uma **apresentação navegável**. Dá para explorar a loja, mon
 **Coleção conceitual BoatOat FM Brasil 2026**
 Produtos criados a partir da arte “Tá bom!” da Lilian: a caneca “Tá bom!” e o banner do Boat “Tá bom”. A página da coleção conta a piada interna “Virou coisa nossa” e deixa claro que não há vínculo oficial com os artistas, a produtora ou o evento.
 
-**Painel de gestão** (`#painel`)
+**Painel de gestão** (`#gestao`)
 - Receita, pedidos, ticket médio e itens vendidos, com filtros por período, categoria e coleção
 - Receita por semana
 - Mais vendidos e menos vendidos
@@ -31,7 +31,7 @@ Produtos criados a partir da arte “Tá bom!” da Lilian: a caneca “Tá bom!
 - Relatório por produto (quantidade, receita, vendas por semana, estoque) com exportação em CSV
 - Os indicadores separam produtos **em linha**, **novos** (menos de 30 dias), **sob encomenda** e **indisponíveis**. Só os produtos em linha entram em “menos vendidos”, e “por semana” considera apenas os dias em que o produto existia.
 
-**Sistema opcional** (`#sistema-opcional`)
+**Sistema opcional** (`#gestao-sistema`)
 Apresentação do sistema de gestão integrado (financeiro, custos e margem, produção, notas fiscais, relatórios e acessos), separado da loja, com escopo e contratação próprios.
 
 ## Demonstração e loja real

@@ -158,7 +158,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
 
   console.log('Gestão');
   await step('painel pede login e mostra indicadores', async () => {
-    await page.goto(BASE + '/#painel');
+    await page.goto(BASE + '/#gestao');
     await page.click('#login button');
     await page.waitForSelector('.kpis');
     expect(await page.locator('.rank').count() >= 3, 'listas de ranking');
@@ -179,32 +179,32 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   });
 
   await step('atualizar status do pedido e cliente ver a mudança', async () => {
-    await page.goto(BASE + '/#painel-pedidos');
+    await page.goto(BASE + '/#gestao-pedidos');
     await page.selectOption(`#st-${code}`, 'enviado');
     await page.goto(BASE + `/#pedido-${code}`);
     expect((await page.textContent('.timeline li.is-now')).includes('Enviado'), 'cliente vê Enviado');
   });
 
   await step('editar estoque gera e remove alerta', async () => {
-    await page.goto(BASE + '/#painel-produtos');
+    await page.goto(BASE + '/#gestao-produtos');
     const row = page.locator('tr[data-id="camiseta-little-joy"]');
     await row.locator('[data-f="stock"]').fill('2');
     await row.locator('[data-f="stock"]').dispatchEvent('change');
-    await page.goto(BASE + '/#painel');
+    await page.goto(BASE + '/#gestao');
     expect((await page.textContent('.panel-warn')).includes('Camiseta Little Joy'), 'camiseta com alerta');
   });
 
   await step('desativar produto tira ele da loja', async () => {
-    await page.goto(BASE + '/#painel-produtos');
+    await page.goto(BASE + '/#gestao-produtos');
     await page.locator('tr[data-id="planner-bl"] [data-f="active"]').uncheck();
     await page.goto(BASE + '/#colecao-bl-diaries');
     expect(!(await page.textContent('#view')).includes('Planner semanal'), 'planner sumiu da coleção');
-    await page.goto(BASE + '/#painel-produtos');
+    await page.goto(BASE + '/#gestao-produtos');
     await page.locator('tr[data-id="planner-bl"] [data-f="active"]').check();
   });
 
   await step('relatório mostra receita por produto e exporta CSV', async () => {
-    await page.goto(BASE + '/#painel-relatorios');
+    await page.goto(BASE + '/#gestao-relatorios');
     await page.waitForSelector('[data-testid="report"] tbody tr');
     await page.selectOption('#pd-coll', '');
     expect(await page.locator('[data-testid="report"] tbody tr').count() >= 10, 'linhas do relatório');
@@ -220,7 +220,7 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'pt-BR' });
   const m = await mobile.newPage();
   m.setDefaultTimeout(8000);
-  for (const route of ['inicio', 'loja', 'p-caneca-ta-bom', 'colecao-boatoat', 'sacola', 'brindes', 'painel']) {
+  for (const route of ['inicio', 'loja', 'p-caneca-ta-bom', 'colecao-boatoat', 'sacola', 'brindes', 'gestao']) {
     await step(`sem rolagem lateral em #${route}`, async () => {
       await m.goto(`${BASE}/#${route}`);
       await m.waitForTimeout(300);
@@ -262,11 +262,27 @@ function expect(cond, msg) { if (!cond) throw new Error(msg); }
     await e.click('.lang-switch [data-lang="pt"]');
     expect((await e.textContent('#view h1')).includes('Encontre o seu favorito'), 'título em português');
   });
-  await step('painel continua em português com a loja em inglês', async () => {
-    await e.click('.lang-switch [data-lang="en"]');
+  await step('rodapé público não tem link para a gestão', async () => {
+    await e.goto(`${BASE}/#inicio`);
+    expect(!(await e.locator('footer a[href^="#gestao"], footer a[href^="#painel"]').count()), 'link da gestão no rodapé');
+    expect(!(await e.textContent('footer')).includes('Sistema opcional'), 'sistema opcional no rodapé');
+  });
+  await step('endereço antigo #painel leva à gestão', async () => {
     await e.goto(`${BASE}/#painel`);
     await e.waitForTimeout(300);
-    expect((await e.textContent('#view h1')).includes('Área da Lilian'), 'painel em português');
+    expect((await e.evaluate(() => location.hash)) === '#gestao', 'redireciona para #gestao');
+  });
+  await step('sistema opcional pede login da equipe', async () => {
+    await e.goto(`${BASE}/#gestao-sistema`);
+    await e.waitForTimeout(300);
+    expect((await e.textContent('#view h1')).includes('Acesso da equipe'), 'tela de login');
+  });
+  await step('painel continua em português com a loja em inglês', async () => {
+    await e.goto(`${BASE}/#loja`);
+    await e.click('.lang-switch [data-lang="en"]');
+    await e.goto(`${BASE}/#gestao`);
+    await e.waitForTimeout(300);
+    expect((await e.textContent('#view h1')).includes('Acesso da equipe'), 'painel em português');
   });
 
   await browser.close();

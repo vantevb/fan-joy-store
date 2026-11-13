@@ -9,9 +9,9 @@ import { tr, isEn, setLang, chosenLang, forceLang } from './i18n.js';
 const TITLES = {
   inicio: ['Fan Joy Store', 'Fan Joy Store'], loja: ['Loja', 'Shop'], colecoes: ['Coleções', 'Collections'], sacola: ['Sacola', 'Bag'], checkout: ['Finalizar compra', 'Checkout'], pedidos: ['Meus pedidos', 'My orders'],
   personalizados: ['Encomendas personalizadas', 'Custom orders'], brindes: ['Brindes corporativos', 'Corporate gifts'], historia: ['Nossa história', 'Our story'], atendimento: ['Atendimento', 'Contact'],
-  politicas: ['Políticas', 'Policies'], painel: ['Painel', 'Painel'], 'sistema-opcional': ['Sistema opcional', 'Sistema opcional'],
+  politicas: ['Políticas', 'Policies'], gestao: ['Gestão', 'Gestão'], 'gestao-sistema': ['Sistema opcional', 'Sistema opcional'],
 };
-const isAdminRoute = (route) => route.startsWith('painel') || route === 'sistema-opcional';
+const isAdminRoute = (route) => route.startsWith('gestao');
 
 // Volta do Mercado Pago: ele devolve a cliente para /?pedido=FJ123456 (com parâmetros dele).
 // Leva para a página do pedido e marca a volta, para a página conferir a confirmação do pagamento.
@@ -59,7 +59,7 @@ function footer() {
       <div class="footer-brand"><img src="img/logo.webp" alt="" width="72" height="72" loading="lazy"><p>${tr('Pequenas alegrias para quem sente tudo um pouco mais.', 'Small joys for people who feel everything a little more.')}</p><p class="fine">Fan Joy Store · São Paulo, SP</p></div>
       <div><h2 class="footer-h">${tr('Loja', 'Shop')}</h2><a href="#loja">${tr('Todos os produtos', 'All products')}</a><a href="#colecoes">${tr('Coleções', 'Collections')}</a><a href="#categoria-freebies">Freebies</a><a href="#colecao-boatoat">BoatOat FM Brasil 2026</a></div>
       <div><h2 class="footer-h">${tr('Atendimento', 'Help')}</h2><a href="#pedidos">${tr('Meus pedidos', 'My orders')}</a><a href="#atendimento">${tr('Dúvidas frequentes', 'FAQ')}</a><a href="#politicas">${tr('Entregas, trocas e privacidade', 'Shipping, returns and privacy')}</a><a href="#personalizados">${tr('Encomendas', 'Custom orders')}</a><a href="#brindes">${tr('Brindes corporativos', 'Corporate gifts')}</a></div>
-      <div><h2 class="footer-h">${tr('Pagamento', 'Payment')}</h2><p class="pay-chips"><span>Pix</span><span>Visa</span><span>Mastercard</span><span>Elo</span></p><h2 class="footer-h">${tr('Gestão', 'Admin')}</h2><a href="#painel" lang="pt-BR">Painel da Lilian</a><a href="#sistema-opcional" lang="pt-BR">Sistema opcional</a></div>
+      <div><h2 class="footer-h">${tr('Pagamento', 'Payment')}</h2><p class="pay-chips"><span>Pix</span><span>Visa</span><span>Mastercard</span><span>Elo</span></p></div>
     </div>
     <div class="wrap footer-base">
       <p>${api.live ? '' : tr('Apresentação demonstrativa. ', 'Demo shop. ')}${tr('A coleção BoatOat FM Brasil 2026 é conceitual e não tem vínculo oficial com os artistas, a produtora ou o evento.', 'The BoatOat FM Brasil 2026 collection is a concept collection with no official connection to the artists, the producer or the event.')}</p>
@@ -165,9 +165,13 @@ function navigate() {
 }
 
 let adminView = null;
+// Endereços antigos da gestão (#painel…, #sistema-opcional) levam aos novos.
+const OLD_ADMIN = { painel: 'gestao', 'painel-pedidos': 'gestao-pedidos', 'painel-produtos': 'gestao-produtos', 'painel-solicitacoes': 'gestao-solicitacoes', 'painel-relatorios': 'gestao-relatorios', 'sistema-opcional': 'gestao-sistema' };
 function render() {
-  const route = decodeURIComponent(location.hash.slice(1)) || 'inicio';
-  // O painel da Lilian fica sempre em português, qualquer que seja o idioma escolhido na loja.
+  const asked = decodeURIComponent(location.hash.slice(1));
+  if (OLD_ADMIN[asked]) history.replaceState(null, '', `#${OLD_ADMIN[asked]}`);
+  const route = OLD_ADMIN[asked] || asked || 'inicio';
+  // A gestão fica sempre em português, qualquer que seja o idioma escolhido na loja.
   const admin = isAdminRoute(route);
   if (admin !== adminView) { adminView = admin; forceLang(admin ? 'pt' : null); chrome(); }
   closeDrawer(true);

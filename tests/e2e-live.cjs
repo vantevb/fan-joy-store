@@ -178,7 +178,7 @@ async function livePage(browser, { online = false } = {}) {
 
   console.log('Painel real');
   await step('login recusa senha errada e conta sem acesso', async () => {
-    await page.goto(SITE + '/#painel');
+    await page.goto(SITE + '/#gestao');
     await page.waitForSelector('#login');
     await page.fill('#lg-email', 'lilian@fanjoy.test');
     await page.fill('#lg-pass', 'errada');
@@ -202,7 +202,7 @@ async function livePage(browser, { online = false } = {}) {
   });
 
   await step('atualiza status com rastreio e a cliente vê', async () => {
-    await page.goto(SITE + '/#painel-pedidos');
+    await page.goto(SITE + '/#gestao-pedidos');
     await page.waitForSelector(`#st-${code}`);
     await page.selectOption(`#st-${code}`, 'pago');
     await page.waitForFunction((c) => document.querySelector(`#st-${c}`)?.value === 'pago' && !document.querySelector(`#st-${c}`).disabled, code);
@@ -216,7 +216,7 @@ async function livePage(browser, { online = false } = {}) {
   });
 
   await step('ajuste de estoque no painel grava no banco', async () => {
-    await page.goto(SITE + '/#painel-produtos');
+    await page.goto(SITE + '/#gestao-produtos');
     await page.waitForSelector('tr[data-id="camiseta-little-joy"]');
     await page.locator('tr[data-id="camiseta-little-joy"] [data-f="stock"]').fill('7');
     await page.locator('tr[data-id="camiseta-little-joy"] [data-f="stock"]').dispatchEvent('change');
@@ -226,19 +226,19 @@ async function livePage(browser, { online = false } = {}) {
   });
 
   await step('relatório e solicitações do banco', async () => {
-    await page.goto(SITE + '/#painel-relatorios');
+    await page.goto(SITE + '/#gestao-relatorios');
     await page.waitForSelector('[data-testid="report"] tbody tr');
     expect((await page.textContent('[data-testid="report"]')).includes('Caneca “Tá bom!”'), 'linha do relatório');
-    await page.goto(SITE + '/#painel-solicitacoes');
+    await page.goto(SITE + '/#gestao-solicitacoes');
     await page.waitForSelector('.req-card');
     expect((await page.textContent('.req-list')).includes('Empresa Real'), 'orçamento no painel');
   });
 
   await step('sair do painel encerra a sessão', async () => {
-    await page.goto(SITE + '/#painel');
+    await page.goto(SITE + '/#gestao');
     await page.waitForSelector('#adm-out');
     await page.click('#adm-out');
-    await page.goto(SITE + '/#painel-pedidos');
+    await page.goto(SITE + '/#gestao-pedidos');
     await page.waitForSelector('#login');
   });
 
