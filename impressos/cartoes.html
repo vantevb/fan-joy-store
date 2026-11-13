@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cartões para os pedidos · Fan Joy Store</title>
+<!--
+  Cartões impressos que vão junto com os pedidos, no visual da loja.
+  Abra com ?folha=<nome> para ver uma folha pronta para imprimir:
+    a4-agradecimento   4 cartões de agradecimento (13 × 9 cm) numa A4 deitada
+    a4-cuidados        9 cartões de cuidados com a caneca (9 × 6 cm) numa A4 deitada
+    foto-agradecimento 1 cartão de agradecimento numa folha 10 × 15 deitada
+    foto-cuidados      2 cartões de cuidados numa folha 10 × 15 em pé
+    agradecimento      só o cartão de agradecimento (para mandar à gráfica)
+    cuidados           só o cartão de cuidados
+  Os PDFs prontos são gerados por tools/gerar-impressos.cjs.
+-->
+<style>
+  @font-face { font-family: 'Gloock'; src: url('../instagram/fonts/gloock-latin-400-normal.woff2') format('woff2'); font-display: block; }
+  @font-face { font-family: 'Figtree'; font-weight: 400; src: url('../instagram/fonts/figtree-latin-400-normal.woff2') format('woff2'); font-display: block; }
+  @font-face { font-family: 'Figtree'; font-weight: 600; src: url('../instagram/fonts/figtree-latin-600-normal.woff2') format('woff2'); font-display: block; }
+  @font-face { font-family: 'Figtree'; font-weight: 700; src: url('../instagram/fonts/figtree-latin-700-normal.woff2') format('woff2'); font-display: block; }
+  :root { --navy: #16224F; --red: #E3263A; --red-ink: #C11D31; --muted: #5A6285; --line: #DFE2EC; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fff; color: var(--navy); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: 'Figtree', sans-serif; }
+
+  /* ---------- Folhas ---------- */
+  .sheet { position: relative; display: grid; justify-content: center; align-content: center; gap: 6mm; background: #fff; }
+  .sheet.a4-land { width: 297mm; height: 210mm; }
+  .sheet.photo-land { width: 150mm; height: 100mm; }
+  .sheet.photo-port { width: 100mm; height: 150mm; }
+  .sheet.solo { width: auto; height: auto; gap: 0; display: inline-grid; }
+  .cols-1 { grid-template-columns: auto; }
+  .cols-2 { grid-template-columns: repeat(2, auto); }
+  .cols-3 { grid-template-columns: repeat(3, auto); }
+
+  /* Marcas de corte nos cantos, fora do cartão */
+  .cut { position: relative; }
+  .sheet:not(.solo) .cut::before, .sheet:not(.solo) .cut::after,
+  .sheet:not(.solo) .cut > .marks::before, .sheet:not(.solo) .cut > .marks::after { content: ""; position: absolute; width: 2.5mm; height: 2.5mm; pointer-events: none; }
+  .sheet:not(.solo) .cut::before { top: -3mm; left: -3mm; border-right: 0.15mm solid #999; border-bottom: 0.15mm solid #999; }
+  .sheet:not(.solo) .cut::after { top: -3mm; right: -3mm; border-left: 0.15mm solid #999; border-bottom: 0.15mm solid #999; }
+  .sheet:not(.solo) .cut > .marks::before { bottom: -3mm; left: -3mm; border-right: 0.15mm solid #999; border-top: 0.15mm solid #999; }
+  .sheet:not(.solo) .cut > .marks::after { bottom: -3mm; right: -3mm; border-left: 0.15mm solid #999; border-top: 0.15mm solid #999; }
+  .marks { position: absolute; inset: 0; pointer-events: none; }
+
+  .card { position: relative; overflow: hidden; background: #fff; }
+  /* Moldura: filete vermelho afastado da borda, para um corte imperfeito não aparecer */
+  .card .frame { position: absolute; inset: 4mm; border: 0.3mm solid var(--red); border-radius: 1.5mm; pointer-events: none; }
+  .spark { position: absolute; width: 3.2mm; height: 3.2mm; color: var(--red); background: #fff; padding: 0.4mm; }
+
+  /* ---------- Agradecimento: 13 × 9 cm ---------- */
+  .thanks { width: 130mm; height: 90mm; display: grid; grid-template-columns: 38mm 1fr; gap: 6mm; align-items: center; padding: 10mm 11mm 10mm 10mm; }
+  .thanks .logo { width: 38mm; height: 38mm; display: block; mix-blend-mode: multiply; } /* some o fundo quase branco da logo */
+  .thanks .spark.s1 { top: 2.4mm; left: 50%; transform: translateX(-50%); }
+  .thanks .spark.s2 { bottom: 2.4mm; left: 50%; transform: translateX(-50%); }
+  .thanks h1 { font: 400 17.5pt/1.02 'Gloock', serif; letter-spacing: -0.01em; }
+  .thanks h1 em { font-style: normal; color: var(--red-ink); }
+  .thanks .msg { margin-top: 3.2mm; font-size: 8.4pt; line-height: 1.42; }
+  .thanks .sign { margin-top: 3.4mm; font-size: 8.4pt; line-height: 1.3; }
+  .thanks .sign b { display: block; font: 400 11.5pt/1.1 'Gloock', serif; margin-top: 0.6mm; }
+  .thanks .site { margin-top: 3.4mm; display: flex; align-items: center; gap: 1.6mm; font-size: 6.6pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red-ink); }
+  .thanks .site i { width: 1.4mm; height: 1.4mm; background: var(--red); transform: rotate(45deg); }
+
+  /* ---------- Cuidados com a caneca: 9 × 6 cm ---------- */
+  .care { width: 90mm; height: 60mm; padding: 7mm 7.5mm 6mm; }
+  .care .frame { inset: 3mm; }
+  .care .head { display: flex; align-items: center; gap: 2.4mm; }
+  .care .head img { width: 10.5mm; height: 10.5mm; flex: none; mix-blend-mode: multiply; }
+  .care h2 { font: 400 11.6pt/1.05 'Gloock', serif; }
+  .care ul { list-style: none; margin-top: 2.8mm; display: grid; gap: 1.5mm; }
+  .care li { position: relative; padding-left: 3.2mm; font-size: 7.4pt; line-height: 1.28; }
+  .care li::before { content: ""; position: absolute; left: 0.3mm; top: 1.25mm; width: 1.3mm; height: 1.3mm; background: var(--red); transform: rotate(45deg); }
+  .care li b { font-weight: 700; }
+  .care .foot { position: absolute; left: 7.5mm; right: 7.5mm; bottom: 5.4mm; display: flex; align-items: center; gap: 1.2mm; font-size: 7pt; font-weight: 600; color: var(--red-ink); }
+  .care .foot svg { width: 2.6mm; height: 2.6mm; flex: none; }
+  .care .spark.s1 { top: 1.4mm; right: 8mm; width: 2.6mm; height: 2.6mm; }
+</style>
+</head>
+<body>
+<template id="t-thanks">
+  <div class="cut"><div class="card thanks">
+    <div class="frame"></div>
+    <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
+    <svg class="spark s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
+    <img class="logo" src="../img/logo.webp" alt="Fan Joy Store">
+    <div>
+      <h1>Obrigada pelo seu <em>pedido!</em></h1>
+      <p class="msg">Cada peça foi feita com muito carinho, de fã para fã. Esperamos que ela traga um pouquinho de alegria para o seu dia.</p>
+      <p class="sign">Com carinho,<b>Lilian · Fan Joy Store</b></p>
+      <p class="site"><i></i>fanjoystore.com.br<i></i></p>
+    </div>
+  </div><div class="marks"></div></div>
+</template>
+
+<template id="t-care">
+  <div class="cut"><div class="card care">
+    <div class="frame"></div>
+    <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
+    <div class="head"><img src="../img/logo.webp" alt=""><h2>Cuidados com a sua caneca</h2></div>
+    <ul>
+      <li><b>Lave à mão</b>, com esponja macia e detergente neutro.</li>
+      <li>Evite <b>lava-louças</b>, palha de aço e produtos abrasivos.</li>
+      <li>A branca e a colorida vão ao <b>micro-ondas</b>. A mágica, não.</li>
+      <li><b>Caneca mágica:</b> a arte aparece com bebida quente.</li>
+      <li>Evite mudanças bruscas de temperatura.</li>
+    </ul>
+    <p class="foot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.6 3 4.5 6.9 4.5c2.2 0 3.7 1.2 5.1 3 1.4-1.8 2.9-3 5.1-3 3.9 0 6 4.1 4.5 7.3C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg>Assim a estampa dura muito mais.</p>
+  </div><div class="marks"></div></div>
+</template>
+
+<script>
+  const SHEETS = {
+    'a4-agradecimento': { cls: 'a4-land cols-2', tpl: 't-thanks', n: 4 },
+    'a4-cuidados': { cls: 'a4-land cols-3', tpl: 't-care', n: 9 },
+    'foto-agradecimento': { cls: 'photo-land cols-1', tpl: 't-thanks', n: 1 },
+    'foto-cuidados': { cls: 'photo-port cols-1', tpl: 't-care', n: 2 },
+    agradecimento: { cls: 'solo', tpl: 't-thanks', n: 1 },
+    cuidados: { cls: 'solo', tpl: 't-care', n: 1 },
+  };
+  const name = new URLSearchParams(location.search).get('folha') || 'a4-agradecimento';
+  const cfg = SHEETS[name] || SHEETS['a4-agradecimento'];
+  const sheet = document.createElement('div');
+  sheet.className = `sheet ${cfg.cls}`;
+  for (let i = 0; i < cfg.n; i++) sheet.append(document.getElementById(cfg.tpl).content.cloneNode(true));
+  document.body.append(sheet);
+</script>
+</body>
+</html>
