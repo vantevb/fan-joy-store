@@ -15,16 +15,23 @@ const PDFS = [
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  for (const [folha, file, width, height] of PDFS) {
-    await page.goto(`${BASE}/impressos/cartoes.html?folha=${folha}`);
-    await page.evaluate(() => document.fonts.ready);
-    await page.pdf({ path: path.join(OUT, file), width, height, printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 } });
-    console.log('PDF', file);
+  // Português e inglês (os arquivos em inglês terminam em -EN).
+  for (const [lang, suffix] of [['pt', ''], ['en', '-EN']]) {
+    for (const [folha, file, width, height] of PDFS) {
+      const name = file.replace('.pdf', `${suffix}.pdf`);
+      await page.goto(`${BASE}/impressos/cartoes.html?folha=${folha}&lang=${lang}`);
+      await page.evaluate(() => document.fonts.ready);
+      await page.pdf({ path: path.join(OUT, name), width, height, printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 } });
+      console.log('PDF', name);
+    }
   }
   // PNG em 300 dpi de cada cartão sozinho, para mandar à gráfica se preferir.
   const hi = await browser.newPage({ deviceScaleFactor: 300 / 96 });
-  for (const [folha, file] of [['agradecimento', 'agradecimento-13x9cm.png'], ['cuidados', 'cuidados-caneca-9x6cm.png']]) {
-    await hi.goto(`${BASE}/impressos/cartoes.html?folha=${folha}`);
+  for (const [folha, file, lang] of [
+    ['agradecimento', 'agradecimento-13x9cm.png', 'pt'], ['cuidados', 'cuidados-caneca-9x6cm.png', 'pt'],
+    ['agradecimento', 'agradecimento-13x9cm-EN.png', 'en'], ['cuidados', 'cuidados-caneca-9x6cm-EN.png', 'en'],
+  ]) {
+    await hi.goto(`${BASE}/impressos/cartoes.html?folha=${folha}&lang=${lang}`);
     await hi.evaluate(() => document.fonts.ready);
     await hi.locator('.card').screenshot({ path: path.join(OUT, file) });
     console.log('PNG', file);

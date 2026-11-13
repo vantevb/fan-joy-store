@@ -12,6 +12,7 @@
     foto-cuidados      2 cartões de cuidados numa folha 10 × 15 em pé
     agradecimento      só o cartão de agradecimento (para mandar à gráfica)
     cuidados           só o cartão de cuidados
+  Acrescente &lang=en para a versão em inglês.
   Os PDFs prontos são gerados por tools/gerar-impressos.cjs.
 -->
 <style>
@@ -83,7 +84,7 @@
     <div class="frame"></div>
     <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
     <svg class="spark s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
-    <img class="logo" src="../img/logo.webp" alt="Fan Joy Store">
+    <img class="logo" src="logo-impressao.png" alt="Fan Joy Store">
     <div>
       <h1>Obrigada pelo seu <em>pedido!</em></h1>
       <p class="msg">Cada peça foi feita com muito carinho, de fã para fã. Esperamos que ela traga um pouquinho de alegria para o seu dia.</p>
@@ -97,7 +98,7 @@
   <div class="cut"><div class="card care">
     <div class="frame"></div>
     <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
-    <div class="head"><img src="../img/logo.webp" alt=""><h2>Cuidados com a sua caneca</h2></div>
+    <div class="head"><img src="logo-impressao.png" alt=""><h2>Cuidados com a sua caneca</h2></div>
     <ul>
       <li><b>Lave à mão</b>, com esponja macia e detergente neutro.</li>
       <li>Evite <b>lava-louças</b>, palha de aço e produtos abrasivos.</li>
@@ -106,6 +107,37 @@
       <li>Evite mudanças bruscas de temperatura.</li>
     </ul>
     <p class="foot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.6 3 4.5 6.9 4.5c2.2 0 3.7 1.2 5.1 3 1.4-1.8 2.9-3 5.1-3 3.9 0 6 4.1 4.5 7.3C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg>Assim a estampa dura muito mais.</p>
+  </div><div class="marks"></div></div>
+</template>
+
+<template id="t-thanks-en">
+  <div class="cut"><div class="card thanks">
+    <div class="frame"></div>
+    <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
+    <svg class="spark s2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
+    <img class="logo" src="logo-impressao.png" alt="Fan Joy Store">
+    <div>
+      <h1>Thank you for your <em>order!</em></h1>
+      <p class="msg">Every piece was made with lots of love, from fan to fan. We hope it brings a little joy to your day.</p>
+      <p class="sign">With love,<b>Lilian · Fan Joy Store</b></p>
+      <p class="site"><i></i>fanjoystore.com.br<i></i></p>
+    </div>
+  </div><div class="marks"></div></div>
+</template>
+
+<template id="t-care-en">
+  <div class="cut"><div class="card care">
+    <div class="frame"></div>
+    <svg class="spark s1" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c.7 6.6 4.9 10.9 12 12-7.1 1.1-11.3 5.4-12 12-.7-6.6-4.9-10.9-12-12C7.1 10.9 11.3 6.6 12 0z" fill="currentColor"/></svg>
+    <div class="head"><img src="logo-impressao.png" alt=""><h2>Caring for your mug</h2></div>
+    <ul>
+      <li><b>Hand wash</b> with a soft sponge and mild dish soap.</li>
+      <li>Avoid the <b>dishwasher</b>, steel wool and abrasive cleaners.</li>
+      <li>White and colored mugs are <b>microwave safe</b>. Magic mugs are not.</li>
+      <li><b>Magic mug:</b> the art appears with a hot drink.</li>
+      <li>Avoid sudden temperature changes.</li>
+    </ul>
+    <p class="foot"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.6 3 4.5 6.9 4.5c2.2 0 3.7 1.2 5.1 3 1.4-1.8 2.9-3 5.1-3 3.9 0 6 4.1 4.5 7.3C19.5 16.4 12 21 12 21z" fill="currentColor"/></svg>This keeps the print looking great for longer.</p>
   </div><div class="marks"></div></div>
 </template>
 
@@ -118,11 +150,15 @@
     agradecimento: { cls: 'solo', tpl: 't-thanks', n: 1 },
     cuidados: { cls: 'solo', tpl: 't-care', n: 1 },
   };
-  const name = new URLSearchParams(location.search).get('folha') || 'a4-agradecimento';
+  const params = new URLSearchParams(location.search);
+  const name = params.get('folha') || 'a4-agradecimento';
   const cfg = SHEETS[name] || SHEETS['a4-agradecimento'];
+  // ?lang=en usa a versão em inglês dos cartões
+  const en = params.get('lang') === 'en';
+  if (en) document.documentElement.lang = 'en';
   const sheet = document.createElement('div');
   sheet.className = `sheet ${cfg.cls}`;
-  for (let i = 0; i < cfg.n; i++) sheet.append(document.getElementById(cfg.tpl).content.cloneNode(true));
+  for (let i = 0; i < cfg.n; i++) sheet.append(document.getElementById(cfg.tpl + (en ? '-en' : '')).content.cloneNode(true));
   document.body.append(sheet);
 </script>
 </body>

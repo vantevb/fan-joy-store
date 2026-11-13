@@ -76,7 +76,7 @@ Com o servidor rodando, abra http://localhost:8080/instagram/ para montar posts 
 
 ## Cartões para os pedidos
 
-Em `impressos/` ficam os cartões que vão junto com os pedidos, no visual da loja: **agradecimento** (13 × 9 cm) e **cuidados com a caneca** (9 × 6 cm). Há PDFs prontos para imprimir em A4 (4 e 9 por folha) e em papel fotográfico 10 × 15 (1 e 2 por folha), com marcas de corte, e PNGs em 300 dpi para gráfica. Imprima em **tamanho real (100%)**, sem "ajustar à página". Para mudar os textos, edite `impressos/cartoes.html` e rode `node tools/gerar-impressos.cjs`.
+Em `impressos/` ficam os cartões que vão junto com os pedidos, no visual da loja: **agradecimento** (13 × 9 cm) e **cuidados com a caneca** (9 × 6 cm). Há versões em português e em inglês (arquivos terminados em `-EN`), com PDFs prontos para imprimir em A4 (4 e 9 por folha) e em papel fotográfico 10 × 15 (1 e 2 por folha), com marcas de corte, e PNGs em 300 dpi para gráfica. Imprima em **tamanho real (100%)**, sem "ajustar à página". Para mudar os textos, edite `impressos/cartoes.html` e rode `node tools/gerar-impressos.cjs`.
 
 ## Testes
 
