@@ -159,6 +159,36 @@ select tests.ok(public.confirm_payment(current_setting('t.o3')::jsonb->>'code', 
 reset role;
 select tests.ok((select status = 'cancelado' and notes like '%mp-3%devolver%' from public.orders where code = current_setting('t.o3')::jsonb->>'code'), 'pagamento após cancelamento fica anotado para devolução');
 
+-- ================= Frete real (Melhor Envio) =================
+set role anon;
+select tests.fails($$select public.shipping_package('[{"id":"marcadores-dorama","qty":1}]')$$, 'permission denied', 'visitante não monta a embalagem');
+select tests.fails($$select public.save_shipping_quote('30130000', 'x', '[{"id":"a","name":"A","price":1,"days":1}]')$$, 'permission denied', 'visitante não grava cotação de frete');
+reset role;
+set role service_role;
+select set_config('t.pkg', public.shipping_package('[{"id":"caneca-ta-bom","qty":1,"options":{"Modelo":"Mágica (revela a arte com calor)"}},{"id":"caneca-ta-bom","qty":1,"options":{"Modelo":"Branca"}},{"id":"marcadores-dorama","qty":2}]')::text, false);
+select tests.ok(current_setting('t.pkg')::jsonb->>'fingerprint' = 'caneca-ta-bom:2,marcadores-dorama:2', 'embalagem soma o mesmo produto em uma linha', current_setting('t.pkg'));
+select tests.ok((select (x->>'insurance_value')::numeric = 60 and (x->>'weight')::numeric = 0.4 and (x->>'quantity')::int = 2
+  from jsonb_array_elements(current_setting('t.pkg')::jsonb->'products') x where x->>'id' = 'caneca-ta-bom'), 'valor declarado pela média das opções e peso em kg');
+select tests.fails($$select public.shipping_package('[{"id":"ecobag-everyday","qty":1}]')$$, 'produto_indisponivel', 'embalagem recusa produto inativo');
+select set_config('t.q', public.save_shipping_quote('30130-000', 'marcadores-dorama:1',
+  '[{"id":"me-1","name":"Correios PAC","price":18.5,"days":8},{"id":"me-2","name":"Correios SEDEX","price":31.2,"days":4}]')::text, false);
+reset role;
+
+set role anon;
+select set_config('t.o4', (public.place_order('{"name":"Gabi","email":"gabi@exemplo.com","phone":"1"}', '{"street":"R","number":"1"}',
+  '[{"id":"marcadores-dorama","qty":1}]', jsonb_build_object('cep', '30130-000', 'service', 'me-2', 'quote', current_setting('t.q')), '{"method":"cartao","installments":1}'))::text, false);
+select tests.ok((current_setting('t.o4')::jsonb->>'total')::numeric = 12.90 + 31.20, 'pedido usa o preço da cotação guardada', current_setting('t.o4'));
+select tests.fails(format($$select public.place_order('{"name":"G","email":"g@x.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"marcadores-dorama","qty":2}]','{"cep":"30130000","service":"me-1","quote":"%s"}','{"method":"pix"}')$$, current_setting('t.q')), 'frete_expirado', 'cotação não vale para outra quantidade');
+select tests.fails(format($$select public.place_order('{"name":"G","email":"g@x.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"marcadores-dorama","qty":1}]','{"cep":"01310100","service":"me-1","quote":"%s"}','{"method":"pix"}')$$, current_setting('t.q')), 'frete_expirado', 'cotação não vale para outro CEP');
+select tests.fails(format($$select public.place_order('{"name":"G","email":"g@x.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"marcadores-dorama","qty":1}]','{"cep":"30130000","service":"me-9","quote":"%s"}','{"method":"pix"}')$$, current_setting('t.q')), 'frete_invalido', 'serviço fora da cotação é recusado');
+select tests.fails($$select public.place_order('{"name":"G","email":"g@x.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"marcadores-dorama","qty":1}]','{"cep":"30130000","service":"me-1","quote":"nao-e-um-id"}','{"method":"pix"}')$$, 'frete_expirado', 'código de cotação inválido é recusado');
+reset role;
+update public.shipping_quote_cache set expires_at = now() - interval '1 minute' where id = current_setting('t.q')::uuid;
+set role anon;
+select tests.fails(format($$select public.place_order('{"name":"G","email":"g@x.co","phone":"1"}','{"street":"R","number":"1"}','[{"id":"marcadores-dorama","qty":1}]','{"cep":"30130000","service":"me-1","quote":"%s"}','{"method":"pix"}')$$, current_setting('t.q')), 'frete_expirado', 'cotação vencida é recusada');
+select tests.fails('select * from public.shipping_quote_cache', 'permission denied', 'visitante não lê as cotações guardadas');
+reset role;
+
 \o
 \pset format unaligned
 \pset tuples_only on

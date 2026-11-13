@@ -484,6 +484,20 @@ export function renderDrawer() {
 let cep = '';
 let chosenShip = null;
 const freeOr = (v) => (v ? brl(v) : tr('Grátis', 'Free'));
+// Cotação de frete da sacola: vale para o mesmo CEP e os mesmos produtos e quantidades.
+// Na loja real é buscada no servidor (Melhor Envio), então chega depois de um instante.
+let shipState = { key: '', result: null, error: '', loading: false };
+const shipKey = (lines) => `${cep.replace(/\D/g, '')}|${lines.map((l) => `${l.id}:${l.qty}`).sort().join(',')}`;
+const currentQuotes = (lines) => (shipState.key === shipKey(lines) && !shipState.loading ? shipState.result : null);
+function requestQuotes(lines, after) {
+  const key = shipKey(lines);
+  if (shipState.key === key) return;
+  shipState = { key, result: null, error: '', loading: true };
+  api.quoteShipping(cep, lines)
+    .then((res) => { if (shipState.key === key) shipState = { key, result: res, error: res ? '' : 'cep', loading: false }; })
+    .catch((e) => { if (shipState.key === key) shipState = { key, result: null, error: e.message, loading: false }; })
+    .finally(() => { if (shipState.key === key) after(); });
+}
 function bagPage() {
   return {
     html: `<section class="section page-top"><div class="wrap"><p class="eyebrow">${tr('Sacola', 'Bag')}</p><h1 class="h1">${tr('Sua sacola', 'Your bag')}</h1><div id="bag"></div></div></section>`,
@@ -492,7 +506,11 @@ function bagPage() {
       const render = () => {
         const lines = S.cartLines();
         if (!lines.length) { box.innerHTML = emptyBag('btn-primary'); return; }
-        const quotes = cep ? S.shippingQuotes(cep, lines) : null;
+        if (cep) requestQuotes(lines, () => { if (box.isConnected) render(); });
+        const quotes = cep ? currentQuotes(lines) : null;
+        const mine = cep && shipState.key === shipKey(lines);
+        const loading = mine && shipState.loading;
+        const shipError = mine && !loading ? shipState.error : '';
         if (quotes && !quotes.quotes.find((q) => q.id === chosenShip?.id)) chosenShip = quotes.quotes[0];
         const sub = S.cartSubtotal();
         box.innerHTML = `<div class="bag-grid">
@@ -502,10 +520,11 @@ function bagPage() {
             <form id="cep-form" class="cep-form"><label class="field" for="cep"><span>${tr('Calcular frete', 'Calculate shipping (CEP)')}</span>
               <span class="inline"><input id="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" value="${esc(cep)}" maxlength="9"><button class="btn btn-small btn-ghost" type="submit">${tr('Calcular', 'Calculate')}</button></span></label></form>
             ${isEn() ? '<p class="fine">We ship within Brazil only. The CEP is the 8-digit Brazilian ZIP code.</p>' : ''}
-            ${cep && !quotes ? `<p class="error">${tr('Digite um CEP com 8 números.', 'Enter a CEP with 8 digits.')}</p>` : ''}
+            ${loading ? `<p class="fine" role="status">${tr('Calculando o frete…', 'Calculating shipping…')}</p>` : ''}
+            ${shipError === 'cep' ? `<p class="error">${tr('Digite um CEP com 8 números.', 'Enter a CEP with 8 digits.')}</p>` : shipError ? `<p class="error">${esc(shipError)} <button type="button" class="link-btn" id="ship-retry">${tr('Tentar de novo', 'Try again')}</button></p>` : ''}
             ${quotes ? `<p class="fine">${tr(`Entrega para ${esc(S.regionName(quotes.region))}`, `Delivery to ${esc(S.regionName(quotes.region))}`)}${api.live ? '' : tr(' (valores simulados)', ' (simulated rates)')}</p><div class="ship-opts">${quotes.quotes.map((q) => `<label class="ship"><input type="radio" name="ship" value="${q.id}" ${chosenShip?.id === q.id ? 'checked' : ''}><span><strong>${esc(S.shipName(q.name))}</strong> · ${tr('até', 'up to')} ${q.days} ${days(q.days)}</span><b>${freeOr(q.price)}</b></label>`).join('')}</div>` : ''}
             <p class="sum-row"><span>Subtotal</span><span>${brl(sub)}</span></p>
-            <p class="sum-row"><span>${tr('Frete', 'Shipping')}</span><span>${chosenShip && quotes ? freeOr(chosenShip.price) : tr('Informe o CEP', 'Enter your CEP')}</span></p>
+            <p class="sum-row"><span>${tr('Frete', 'Shipping')}</span><span>${chosenShip && quotes ? freeOr(chosenShip.price) : loading ? '…' : tr('Informe o CEP', 'Enter your CEP')}</span></p>
             <p class="sum-row sum-total"><span>Total</span><strong data-testid="bag-total">${brl(sub + (quotes && chosenShip ? chosenShip.price : 0))}</strong></p>
             <p class="fine">${tr(`No Pix: ${brl(sub * 0.95 + (quotes && chosenShip ? chosenShip.price : 0))} (5% de desconto nos produtos)`, `With Pix: ${brl(sub * 0.95 + (quotes && chosenShip ? chosenShip.price : 0))} (5% off products)`)}</p>
             <button class="btn btn-primary btn-wide" id="to-checkout" type="button" ${quotes ? '' : 'disabled'}>${tr('Finalizar compra', 'Checkout')}</button>
@@ -517,6 +536,8 @@ function bagPage() {
         box.querySelector('#cep-form').onsubmit = (e) => { e.preventDefault(); cep = box.querySelector('#cep').value; chosenShip = null; render(); };
         box.querySelector('#cep').oninput = (e) => { const d = e.target.value.replace(/\D/g, '').slice(0, 8); e.target.value = d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
         box.querySelectorAll('input[name="ship"]').forEach((r) => { r.onchange = () => { chosenShip = quotes.quotes.find((q) => q.id === r.value); render(); }; });
+        const retry = box.querySelector('#ship-retry');
+        if (retry) retry.onclick = () => { shipState.key = ''; render(); };
         box.querySelector('#to-checkout').onclick = () => go('#checkout');
       };
       render();
@@ -540,8 +561,8 @@ const luhn = (num) => {
 function checkout() {
   const lines = S.cartLines();
   if (!lines.length) return { html: `<section class="section page-top"><div class="wrap">${emptyBag('btn-primary')}</div></section>` };
-  const quotes = cep ? S.shippingQuotes(cep, lines) : null;
-  if (!quotes || !chosenShip) return { html: `<section class="section page-top"><div class="wrap empty-bag"><p>${tr('Calcule o frete na sacola antes de finalizar.', 'Calculate shipping in your bag before checking out.')}</p><a class="btn btn-primary" href="#sacola">${tr('Voltar para a sacola', 'Back to bag')}</a></div></section>` };
+  const quotes = cep ? currentQuotes(lines) : null;
+  if (!quotes || !chosenShip || !quotes.quotes.some((q) => q.id === chosenShip.id)) return { html: `<section class="section page-top"><div class="wrap empty-bag"><p>${tr('Calcule o frete na sacola antes de finalizar.', 'Calculate shipping in your bag before checking out.')}</p><a class="btn btn-primary" href="#sacola">${tr('Voltar para a sacola', 'Back to bag')}</a></div></section>` };
   const sub = S.cartSubtotal();
   return {
     html: `<section class="section page-top"><div class="wrap">
@@ -641,7 +662,7 @@ function checkout() {
           const order = await api.placeOrder({
             customer: { name: $('#c-name').value.trim(), email: $('#c-email').value.trim(), phone: $('#c-phone').value.trim(), city: $('#c-city')?.value.trim() || 'São Paulo, SP' },
             address: chosenShip.id === 'retirada' ? {} : { street: $('#c-street').value.trim(), number: $('#c-num').value.trim(), complement: $('#c-comp').value.trim(), city: $('#c-city').value.trim(), cep },
-            shipping: { id: chosenShip.id, name: chosenShip.name, price: chosenShip.price, days: chosenShip.days, cep },
+            shipping: { id: chosenShip.id, name: chosenShip.name, price: chosenShip.price, days: chosenShip.days, cep, quote: quotes.quoteId },
             payment: { method, installments: method === 'cartao' ? Number(inst.value) : 1, last4 },
             lines: S.cartLines(),
           });
@@ -653,6 +674,7 @@ function checkout() {
           go(`#pedido-${order.code}`);
         } catch (ex) {
           place.disabled = false; place.textContent = placeLabel;
+          shipState.key = ''; // na volta para a sacola, o frete é cotado de novo
           fail(ex.message, []);
         }
       };

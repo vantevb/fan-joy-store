@@ -176,6 +176,41 @@ async function livePage(browser, { online = false } = {}) {
     await p.context().close();
   });
 
+  console.log('Frete real');
+  await step('com o frete real, a sacola mostra a cotação do servidor e o pedido usa esse valor', async () => {
+    const p = await livePage(browser);
+    // A Edge Function cotar-frete é simulada: guarda no banco uma cotação como a do Melhor Envio.
+    await p.route('**/functions/v1/cotar-frete', async (route) => {
+      const { cep, items } = JSON.parse(route.request().postData());
+      const fp = items.map((i) => `${i.id}:${i.qty}`).sort().join(',');
+      const quotes = [{ id: 'me-1', name: 'Correios PAC', price: 23.45, days: 9 }, { id: 'me-2', name: 'Correios SEDEX', price: 41.1, days: 5 }];
+      const quoteId = sql(`select public.save_shipping_quote('${cep.replace(/\D/g, '')}', '${fp}', '${JSON.stringify(quotes)}'::jsonb)`);
+      await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ quoteId, quotes }) });
+    });
+    await p.goto(SITE + '/#p-planner-bl');
+    await p.click('#add');
+    await p.goto(SITE + '/#sacola');
+    await p.fill('#cep', '30130-000');
+    await p.click('#cep-form button');
+    await p.waitForSelector('input[name="ship"][value="me-2"]');
+    expect((await p.textContent('.ship-opts')).includes('Correios SEDEX'), 'serviços do Melhor Envio na sacola');
+    await p.check('input[name="ship"][value="me-2"]');
+    await p.click('#to-checkout');
+    await p.fill('#c-name', 'Lia Frete');
+    await p.fill('#c-email', 'lia@exemplo.com');
+    await p.fill('#c-phone', '31999990000');
+    await p.fill('#c-street', 'Rua C');
+    await p.fill('#c-num', '30');
+    await p.fill('#c-city', 'Belo Horizonte, MG');
+    await p.check('input[name="pay"][value="cartao"]');
+    await p.click('#place');
+    await p.waitForFunction(() => location.hash.startsWith('#pedido-'));
+    const row = sql("select shipping_service || '|' || shipping_price || '|' || total from public.orders where customer_email = 'lia@exemplo.com'");
+    expect(row === 'Correios SEDEX|41.10|81.00', `pedido com o frete cotado (39,90 + 41,10): ${row}`);
+    expect(p.errors.length === 0, p.errors.join(' | '));
+    await p.context().close();
+  });
+
   console.log('Painel real');
   await step('login recusa senha errada e conta sem acesso', async () => {
     await page.goto(SITE + '/#gestao');
@@ -215,6 +250,17 @@ async function livePage(browser, { online = false } = {}) {
     expect((await page.textContent('#view')).includes('BR123456789BR'), 'rastreio para a cliente');
   });
 
+  await step('peso e medidas da embalagem gravam no banco', async () => {
+    await page.goto(SITE + '/#gestao-produtos');
+    await page.click('#pack-box summary');
+    const row = page.locator('tr[data-testid="pack-row"][data-id="fan-joy-box"]');
+    await row.locator('[data-f="weightG"]').fill('1250');
+    await row.locator('[data-f="weightG"]').dispatchEvent('change');
+    let saved = '';
+    for (let i = 0; i < 30 && saved !== '1250'; i++) { await page.waitForTimeout(200); saved = sql("select weight_g from public.products where id = 'fan-joy-box'"); }
+    expect(saved === '1250', `peso no banco: ${saved}`);
+    expect(await page.locator('#pack-box').evaluate((d) => d.open), 'embalagem continua aberta');
+  });
   await step('ajuste de estoque no painel grava no banco', async () => {
     await page.goto(SITE + '/#gestao-produtos');
     await page.waitForSelector('tr[data-id="camiseta-little-joy"]');

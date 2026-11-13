@@ -252,6 +252,7 @@ function productsAdmin() {
     mount(root) {
       bindShell(root);
       const box = root.querySelector('#pp');
+      let openPack = false; // mantém a embalagem aberta enquanto a Lilian preenche
       const render = () => safe(box, async () => {
         const list = await api.admin.products();
         box.innerHTML = `<div class="admin-head"><div><p class="eyebrow">Produtos e estoque</p><h1 class="h2">Catálogo</h1></div></div>
@@ -270,6 +271,16 @@ function productsAdmin() {
                 <td><label class="switch"><input type="checkbox" data-f="active" ${p.active ? 'checked' : ''} aria-label="Mostrar ${esc(p.name)} na loja"><span></span></label></td>
               </tr>`;
             }).join('')}</tbody></table></div>
+          <details class="panel add-product" id="pack-box"><summary class="h3">Embalagem para o frete</summary>
+            <p class="fine">Peso e medidas de cada produto <strong>já embalado</strong>, como vai para a transportadora. É com eles que o frete é calculado. Em branco, o frete usa uma embalagem pequena padrão (300 g, 16 × 11 × 4 cm).</p>
+            <div class="table-wrap"><table class="table table-edit">
+              <thead><tr><th>Produto</th><th class="num">Peso (g)</th><th class="num">Comprimento (cm)</th><th class="num">Largura (cm)</th><th class="num">Altura (cm)</th></tr></thead>
+              <tbody>${list.filter((p) => !['gratis', 'orcamento'].includes(p.mode)).map((p) => `<tr data-id="${p.id}" data-testid="pack-row">
+                <td>${esc(p.name)}</td>
+                ${[['weightG', 'Peso em gramas', 1], ['lengthCm', 'Comprimento em cm', 0.5], ['widthCm', 'Largura em cm', 0.5], ['heightCm', 'Altura em cm', 0.5]].map(([f, label, step]) =>
+                  `<td class="num"><input data-f="${f}" type="number" min="0" step="${step}" value="${p[f] ?? ''}" placeholder="—" aria-label="${label} de ${esc(p.name)}"></td>`).join('')}
+              </tr>`).join('')}</tbody></table></div>
+          </details>
           <details class="panel add-product"><summary class="h3">Cadastrar produto</summary>
             <form id="np" class="row2">
               <label class="field field-wide" for="np-name"><span>Nome</span><input id="np-name" required></label>
@@ -286,11 +297,14 @@ function productsAdmin() {
               <p class="fine field-wide">Na versão definitiva, este formulário também recebe fotos, variações e medidas.</p>
               <button class="btn btn-primary" type="submit">Cadastrar</button>
             </form></details>`;
+        if (openPack) box.querySelector('#pack-box').open = true;
         box.querySelectorAll('tr[data-id]').forEach((tr) => {
           tr.querySelectorAll('[data-f]').forEach((el) => {
             el.onchange = async () => {
               const f = el.dataset.f;
-              const v = f === 'active' ? el.checked : f === 'mode' ? el.value : Math.max(0, Number(el.value) || 0);
+              const pack = ['weightG', 'lengthCm', 'widthCm', 'heightCm'].includes(f);
+              const v = f === 'active' ? el.checked : f === 'mode' ? el.value : pack ? (Number(el.value) > 0 ? Number(el.value) : '') : Math.max(0, Number(el.value) || 0);
+              if (pack) openPack = true;
               el.disabled = true;
               try { await api.admin.updateProduct(tr.dataset.id, { [f]: v }); toast('Produto atualizado'); } catch (e) { toast(e.message); }
               render();

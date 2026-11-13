@@ -58,6 +58,7 @@ function friendly(error) {
     quantidade_invalida: () => tr('A quantidade de cada item precisa ficar entre 1 e 20.', 'Each item’s quantity must be between 1 and 20.'),
     cep_invalido: () => tr('Confira o CEP: ele precisa ter 8 números.', 'Check your CEP: it must have 8 digits.'),
     frete_invalido: () => tr('Essa forma de entrega não está disponível para o seu CEP. Calcule o frete de novo na sacola.', 'That shipping option isn’t available for your CEP. Calculate shipping again in your bag.'),
+    frete_expirado: () => tr('O valor do frete precisa ser atualizado. Volte para a sacola e calcule o frete de novo.', 'The shipping price needs to be updated. Go back to your bag and calculate shipping again.'),
     endereco_invalido: () => tr('Informe o endereço e o número para a entrega.', 'Enter the street address and number for delivery.'),
     dados_cliente_invalidos: () => tr('Confira nome, e-mail e WhatsApp.', 'Check your name, e-mail and WhatsApp number.'),
     parcelas_invalidas: () => tr('O parcelamento vai até 3 vezes.', 'You can split the payment into up to 3 installments.'),
@@ -97,6 +98,29 @@ export async function init() {
   S.setLiveCatalog(cat.products);
 }
 
+// Frete. Na loja real, cota de verdade no Melhor Envio pela Edge Function cotar-frete, que guarda a cotação
+// no banco (quoteId). Se o frete real ainda não estiver configurado, usa a tabela provisória, que o servidor
+// confere do mesmo jeito. Devolve null para CEP inválido.
+export async function quoteShipping(cep, lines) {
+  const local = S.shippingQuotes(cep, lines);
+  if (!local) return null;
+  if (!live) return local;
+  let r;
+  try {
+    r = await fetch(`${SUPABASE_URL}/functions/v1/cotar-frete`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cep, items: lines.map((l) => ({ id: l.id, qty: l.qty, options: l.options })) }),
+    });
+  } catch { return local; } // função ainda não publicada (sem CORS) ou fora do ar: tabela provisória
+  if (r.status === 503 || r.status === 404) { r.body?.cancel?.(); return local; }
+  const d = await r.json().catch(() => ({}));
+  if (r.ok && d.quoteId && Array.isArray(d.quotes)) return { region: local.region, quotes: d.quotes, quoteId: d.quoteId };
+  if (d.error === 'sem_frete_para_cep') throw new Error(tr('Ainda não há entrega para esse CEP. Fale com a gente pelo atendimento.', 'There’s no delivery to this CEP yet. Please contact us.'));
+  if (/^(produto_indisponivel|quantidade_invalida)/.test(d.error || '')) throw friendly({ message: d.error });
+  throw new Error(tr('Não foi possível calcular o frete agora. Tente de novo em instantes.', 'We couldn’t calculate shipping right now. Please try again in a moment.'));
+}
+
 export async function placeOrder({ customer, address, shipping, payment, lines }) {
   if (!live) {
     const o = S.createOrder({ customer, shipping, payment, lines });
@@ -106,7 +130,7 @@ export async function placeOrder({ customer, address, shipping, payment, lines }
     p_customer: customer,
     p_address: address,
     p_items: lines.map((l) => ({ id: l.id, qty: l.qty, options: l.options, personalization: l.personalization })),
-    p_shipping: { cep: shipping.cep, service: shipping.id },
+    p_shipping: { cep: shipping.cep, service: shipping.id, ...(shipping.quote ? { quote: shipping.quote } : {}) },
     p_payment: { method: payment.method, installments: payment.installments },
   });
   rememberOrder(res.code, customer.email.toLowerCase());

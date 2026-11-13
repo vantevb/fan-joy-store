@@ -83,7 +83,7 @@ Para regenerar o `seed.sql` depois de mudar `js/data.js`: `node tools/gerar-seed
 | Login do painel e permissões (dona e equipe) | Pronto |
 | Pedidos, estoque, status, rastreio, relatórios e orçamentos no banco | Pronto |
 | Pagamento on-line (Pix e cartão) | Pronto, esperando a conta do Mercado Pago. As Edge Functions `criar-pagamento` e `mercadopago-webhook` estão publicadas; falta configurar os segredos e ligar `PAGAMENTO_ONLINE`. Veja [pagamento.md](pagamento.md). |
-| Frete real | Próximo. Uma Edge Function consulta o Melhor Envio com o peso e as medidas dos produtos e substitui `shipping_quotes`. As medidas do `seed.sql` são estimativas por categoria. |
+| Frete real | Pronto, esperando a conta do Melhor Envio. Edge Function `cotar-frete`, cotação guardada no banco e peso/medidas editáveis no painel. Veja [frete.md](frete.md). |
 | E-mails automáticos | Próximo. Confirmação do pedido, pagamento aprovado e envio com rastreio, pelo Resend ou pelo Brevo, a partir do domínio da loja. |
 | Verificação em duas etapas no painel | Próximo. O Supabase oferece autenticador (TOTP). |
 | Proteção contra pedidos falsos em massa | Próximo. Captcha (Cloudflare Turnstile) antes de criar pedido ou orçamento, verificado numa Edge Function. |
